@@ -1,0 +1,106 @@
+% 
+% \iffalse
+%<*driver>
+\documentclass{ltxdoc}
+\begin{document}
+\DocInput{rdf.dtx}
+\end{document}
+%</driver>
+% \fi
+% 
+% 
+% \title{RDF data in \LaTeX\ documents}
+% \author{Lars Hellstr\"om}
+% 
+% \maketitle
+% 
+% 
+% \section{Introduction}
+% 
+% The \textsf{rdf} package is probably best thought of as providing 
+% utilities for a \LaTeX\ document to export \emph{extensive} 
+% metadata, up to and including the contents of entire 
+% environments; the \texttt{abstract} of a research paper is often 
+% so extracted, although the traditional publishing industry may rely 
+% upon manual intervention for this. The name is due to picking a 
+% Resource Description Framework~(RDF) dataset as the model for the 
+% exported data; this makes the format \emph{open} with respect to 
+% what can be expressed, and allows for direct import into the 
+% semantic web. Of course, being able to express arbitrary RDF data 
+% within a \LaTeX\ document also means turning \LaTeX\ into an RDF 
+% encoding, which may be regarded as rather weird when considered at 
+% the low level, but hopefully will seem natural at the user level.
+% 
+% RDF encodes data as sets of \emph{triples} 
+% subject--predicate--object; a triple may also be though of as an 
+% \emph{edge} relating the subject to the object, where the predicate 
+% names what relation that is. RDF is thus closer to the 
+% mathematician's familiar terrain of binary relations ($=$, $<$, 
+% $\approx$, $\succ$, etc.)\@ than are ordinary databases with rows 
+% and columns, although neither subjects nor relations need be 
+% mathematical in flavour. The main kind of term in an RDF triple is 
+% instead the Internationalised Resource Identifier~(IRI), of which 
+% URLs constitute a well-known subset. In particular the predicate of 
+% a triple is an IRI, and conversely any IRI is a valid predicate; 
+% any IRI can in RDF be used as the name of a relation. Common 
+% practice is to ensure uniqueness of any new symbols one creates by 
+% placing at the location identified by the IRI that document which 
+% defines the symbol.
+% 
+% 
+% 
+% \section{Export format}
+% 
+% The export format is mainly N-quads, but with some extra features 
+% to counter limitations of \TeX. In particular, literal strings 
+% (predominantly multiline strings) may be encoded as separate files 
+% that are referenced from the main file. The referencing is done 
+% using directives, which bind a blank node to the external file; in 
+% statement lines that blank node represents the external literal. 
+% The fundamental limitation this is working around is that 
+% standard tokenisation of \TeX\ code forgets some aspects of it (such 
+% as indentation), and that using a piece of code twice (e.g.~abstract 
+% both typeset and exported) requires tokenising. Pragmatically, it 
+% also saves us the trouble of having \TeX\ escape all characters 
+% (particularly backslashes and newlines) that may not occur raw in 
+% N-quad literals.
+% 
+% The idea, which is very old, is to have \TeX\ first copy each 
+% dual-use passage verbatim to an external file, and then |\input| 
+% that file to typeset this passage. This way, each use of the 
+% passage has its own tokenisation pass, which may preserve or forget 
+% information as appropriate. Some uses of that old idea may be 
+% regarded as suboptimal on account of having to employ the file 
+% system just to store information for almost immediate use, but in 
+% this case we always want to write this data in some form to some 
+% file, so the overhead is very small. Nor does there seem to be a 
+% point in exploring \eTeX\ facilities for the task, as the 
+% traditional primitives will serve.
+% 
+% 
+% \subsection{Format specification}
+% 
+% A blank node is made to represent the literal contents of a 
+% separate file by means of an \texttt{@external} directive---a line 
+% having the form
+% \begin{quote}
+%   \texttt{@fileliteral} \meta{node} \meta{filename} 
+%   \meta{optional tags}
+% \end{quote}
+% The \meta{filename} would typically be relative to the directory 
+% containing the file containing this directive. The \meta{optional 
+% tags} is used for information not in the literal content proper, in 
+% particular language and datatype tags. These would have the forms
+% \begin{quote}
+%   |@|\meta{langtag}\\
+%   |^^<|\meta{IRI}|>|
+% \end{quote}
+% as in base N-quads, but appear as separate words in the line. It is 
+% possible that we will also wish to support having the referenced 
+% file in some encoding other than UTF-8, in which case that encoding 
+% would be specified as some sort of tag here as well, but that 
+% remains to be seen.
+% 
+% 
+% 
+\endinput

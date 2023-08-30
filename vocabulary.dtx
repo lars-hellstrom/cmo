@@ -1,0 +1,3242 @@
+% 
+% \iffalse
+%<*driver>
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{xdoc2}
+\newcommand\rdfdefaultprefix{cmo}
+\makeatletter
+\NewMacroEnvironment*{rdfname}%
+  {\XD@grab@marg\XD@grab@harmless@oarg\XD@grab@harmless\relax}{3}%
+  {\XDParToMargin{\MacroFont 
+    \ifx \NoValue#2\@empty \rdfdefaultprefix \else #2\fi
+    :#3 \normalfont (#1)}}%
+  {}% Index entries
+  {{\ifx \NoValue#2\@empty \rdfdefaultprefix \else #2\fi:#3}%
+   {\texttt{\ifx \NoValue#2\@empty \rdfdefaultprefix \else #2\fi:#3}}}%
+  {}
+\def\Module#1{\begingroup
+   \mod@math@codes$\langle\mathsf{#1}\rangle$%
+\endgroup}
+\newcommand\refcodeline[1]{%
+   % #1=line offset, where 1=next
+   \count@=\c@CodelineNo
+   \advance \count@ #1%
+   \protected@edef\@currentlabel{\number\count@}%
+}
+\makeatother
+\setcounter{StandardModuleDepth}{1}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{amsthm}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\CodelineNumbered
+\begin{document}
+\DocInput{vocabulary.dtx}
+\end{document}
+%</driver>
+% \fi
+% 
+% \title{RDF vocabulary for the Catalogue of Mathematical Objects}
+% \author{Lars Hellstr\"om}
+% \date{Version 0.1}
+% 
+% \maketitle
+% 
+% \begin{abstract}
+%   This document is an early sketch of a vocabulary to encode the 
+%   Catalogue of Mathematical Objects using the Resource Description 
+%   Framework~(RDF).
+% \end{abstract}
+% 
+% 
+% \tableofcontents
+% 
+% 
+% \section{Introduction}
+% \label{Sec:Intro}
+% 
+% Mathematical research is primarily published in the form of journal 
+% articles, with proceedings papers and books as notable variations. 
+% In these, the primary results are new theorems; few papers are 
+% accepted on merits other than that of supplying new proofs. But 
+% theorems and proofs alone do not fuel advances in mathematics: 
+% definitions and conjectures can be every bit as important for 
+% structuring the problem space, and key insights often come from 
+% studying the right examples. These are however not so catered for 
+% in traditional publication. There are certainly several books on 
+% (counter)examples in particular branches of mathematics, but these 
+% tend to collect the tried and true (particularly if tricky) ideas 
+% illustrating established knowledge, not the steady trickle of new 
+% ideas at the research front that could \emph{become} pivotal.
+% 
+% Indeed, the example is a form of mathematical knowledge which could 
+% be seen as unfairly penalised by the traditional publication 
+% formats. An example by its own is rarely enough to motivate an 
+% article, so if one gets published that does not directly illustrate 
+% a theorem or definition, it is typically as an add-on to 
+% a paper whose main point is something else, making them difficult 
+% to find in literature searches. Before an example can become a side 
+% topic of a publication it also has to jump some additional hurdles: 
+% not only must there be a paper under production where the example 
+% could comfortably be included, but the person who had the original 
+% idea has to be (or become) an author of that paper, since otherwise 
+% including this example would morally be infringing on that person's 
+% merits. Ideas thrown in from the sideline, maybe at a seminar by 
+% someone who doesn't even work in the field, face a great risk of 
+% never making it to publication.
+% 
+% The \emph{Catalogue of Mathematical Objects} aims to be an 
+% alternative form of publication, where examples are collected in an 
+% online database so that the collection can be efficiently 
+% searched. The Catalogue does not require novelty---thus lowering 
+% the threshold for people to contribute outside their main area of 
+% expertise---but neither is original research outside its scope, 
+% as it would be for Wikipedia. Stating it in those terms, 
+% contributing something to the Catalogue would have ratio of primary 
+% to secondary or tertiary publication similar to those of books, but 
+% without the size requirements of books.
+% The Catalogue offers a form of \emph{micropublishing}, which in 
+% academia in general is understood as a primary publication of 
+% results too minor to make the subject of a normal research paper, 
+% but which none the less may turn out to be useful to someone. (In 
+% empirical sciences, micropublishing can be an excellent format for 
+% reporting the experiments with negative results, that are otherwise 
+% missing from the literature and thus accounting for part of the 
+% problem of positive bias.) 
+% 
+% A consequence of offering primary publication is that one cannot 
+% rely on external sources for verifying the accuracy of content, so 
+% claims will have to be \emph{peer reviewed} as published in the 
+% Catalogue. A practical 
+% organisation of this can be that anyone can publish a claim (in the 
+% sense that anyone can edit a wiki; one might want to restrict 
+% editing rights to registered users or some such), but claims which 
+% have not yet been reviewed are treated as apocryphal in searches: 
+% matches based on reviewed claims are reported first, unreviewed 
+% matches later and with clearly marked caveats. The reasoning is that 
+% anyone bothering to read an unreviewed example will probably need 
+% to verify for themselves that it has the properties sought, and 
+% therefore will anyway do the work of reviewing those claims; the 
+% Catalogue merely needs to provide a convenient means of letting such 
+% users report their findings! As with micropublishing of negative 
+% experimental results, the work has already been done, we only have 
+% to make the results accessible to the community.
+% 
+% 
+% \subsection*{Status of this document}
+% 
+% This is an early draft, so even if the intent is to Get Things 
+% Right, any detail may be subject to change. (Luckily, even if 
+% things would turn out to need an incompatible redesign, it should 
+% not be too hard to migrate such data as may have been collected.)
+% 
+% 
+% \subsection*{Format of this document}
+% 
+% Because of being aimed at several audiences, and perhaps also 
+% because of striking an informal tone at times, this document 
+% probably comes across as being rather mixed in form.
+% 
+% One aim is to specify an \textbf{ontology} for the Catalogue of 
+% Mathematical Objects: define symbols that let you say things, and 
+% to some extent formally specify properties that these symbols 
+% should have. The document does however also embed the reasoning 
+% behind specifying those things in the way chosen, which means it is 
+% probably more roundabout that ontology specifications usually are.
+% 
+% Another aim, which meshes with the reasoning aspect, is to explain 
+% relevant points about semantic web technologies to readers who are 
+% unfamiliar with those (read: mathematicians in general). The idea 
+% here is that rather than sending readers hunting for appropriate 
+% introductory texts and specifications in order to just understand 
+% what is being said, we might as well cover the basics (as they 
+% apply to this project) in this text.
+% 
+% At a more practical level, this document makes use of the \LaTeX\ 
+% \textsf{DocStrip} system for on the one hand keeping multiple kinds 
+% of information in a single narrative and on the other hand 
+% permitting the automatic extraction of such files as might be of 
+% interest to standard semantic web tools. The codelines are numbered 
+% to facilitate comments on this document. Concretely, the different 
+% types of code lines are collected into separate \textsf{DocStrip} 
+% modules using \emph{guard lines} which show up as
+%    \begin{macrocode}
+%<*example>
+%</example>
+%    \end{macrocode}
+% in the typeset document (\texttt{*} marks beginning of block, 
+% \texttt{/} marks end of block). The \Module{example} module is for 
+% illustrative examples of how data might be encoded in the 
+% Catalogue, and none of it should be taken as canon. The 
+% \Module{schema} module contains what might count as a formal 
+% ontology, in Turtle format; this is what is most likely to some day 
+% actually be used by some semantic web tool. The \Module{rules} 
+% module contains some inference rules extressed as SPARQL 
+% \texttt{CONSTRUCT} statements; these explain properties of symbols 
+% discussed far more clearly than the ontology languages. The 
+% \Module{query} module contain example queries in SPARQL format; 
+% these are meant as proof-of-concept, that information can found when 
+% expressed using the sketched vocabulary.
+% 
+% 
+% \section{Background}
+% 
+% This section is for the benefit of mathematicians. Those familiar 
+% with semantic web technologies can probably skip it.
+% 
+% The \emph{Resource Description Framework}~(RDF) is a model for 
+% encoding data as graphs---essentially a \emph{graph} being a set of 
+% edges. Each edge is determined by a \emph{triple} 
+% subject--predicate--object, where the subject and object are nodes 
+% in the graph, and the predicate says what kind of edge it is. 
+% Essentially, each predicate corresponds to a binary relation; some 
+% of these have properties like symmetry or transitivity, whereas 
+% others are univocal (functions), and yet others are just like some 
+% subset of $A \times B$. One thing an ontology can do is impose 
+% restrictions on the predicate relations, but those often work out 
+% as inferences built into the database. For example if $E$ is 
+% specified to be symmetric and the triple \(x \mathrel{E} y\) is 
+% explicitly stored into a database, then that database is also 
+% supposed to answer yes when asked whether \(y \mathrel{E} x\), 
+% regardless of whether that was ever explicitly stored. (It appears 
+% in practice there is considerable variation regarding how powerful 
+% inferences specific database engines support.)
+% 
+% \emph{Terms} in RDF may be of three major kinds: \emph{literal 
+% values} which are only allowed in the object position, \emph{blank 
+% nodes} (essentially fresh identifiers that you may draw from some 
+% separate infinite set) which are only allowed in the subject and 
+% object positions, and \emph{Internationalised Resource 
+% Identifiers}~(IRIs) which are allowed in all three positions. Most 
+% IRIs look like web addresses (e.g.~\texttt{http:\@} URLs), but they 
+% do not need to be derefenceable, and even when one can retrieve a 
+% document by treating the IRI as a web address, the \emph{resource} 
+% the IRI identifies need not be that document. More commonly, 
+% e.g.~\verb|http://narbonic.com/cast/#Artie| would be used to 
+% identify \emph{that which is called Artie} in the document 
+% retrieved from that location. The 
+% idea is that different things should be identified by different 
+% IRIs, and one way of establishing uniqueness is to pick IRIs in an 
+% address subset that one controls. (On the other hand, nothing stops 
+% several distinct IRIs from identifying the same resource; RDF has 
+% no way of knowing, although ontologies sometimes might.)
+% 
+% Since long IRIs such as
+% \begin{quote}
+%   \verb|http://www.w3.org/1999/02/22-rdf-syntax-ns#type|
+% \end{quote}
+% are impractical to type all the time, many concrete syntaxes 
+% support \emph{prefixed names} as a notation for IRIs. In these, a 
+% \emph{prefix} ending with the first colon in a symbol really 
+% denotes some initial part of an IRI to which the \emph{local name} 
+% following the colon should be appended to produce the full IRI. 
+% Most of the time, one would therefore rather see the above IRI 
+% denoted as \texttt{rdf:type}, where the prefix \texttt{rdf:} is in 
+% principle arbitrary (needs to be declared in each document using 
+% it), but also subject to much tradition. Where prefixed names are 
+% supported, raw IRIs typically need to be enclosed in \texttt{<>}.
+% 
+% \begin{rdfname}{prefix}[rdf]{}
+% \begin{rdfname}{prefix}[rdfs]{}
+% \begin{rdfname}{prefix}[owl]{}
+% \begin{rdfname}{prefix}[xsd]{}
+%   These four prefixes are used to reference standard resources in 
+%   the RDF infrastructure.
+%    \begin{macrocode}
+%<*schema>
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+%    \end{macrocode}
+%   The \texttt{rdf} namespace holds some basic symbols defined by 
+%   the RDF specification. The \texttt{rdfs} namespace does the same 
+%   for the RDF Schema specification, and the \texttt{owl} namespace 
+%   for the Ontology Web Language. The \texttt{xsd} namespace 
+%   (for XML Schema Datatypes) provides a standard collection of 
+%   basic datatypes (but is it needed here?).
+% \end{rdfname}\end{rdfname}\end{rdfname}\end{rdfname}
+% 
+% The basic way to write a triple in text is to give its three terms 
+% in order subject--predicate--object, separated by whitespace, and 
+% terminated with a full stop (period), after which another triple 
+% may follow. The Turtle format, which will be used in the 
+% \Module{schema} and \Module{example}, provides two abbreviations: a 
+% \textbf{semicolon} after a triple means the next triple has the same 
+% subject as the previous (thus a semicolon is followed by only a 
+% predicate--object pair), and a \textbf{comma} after a triple means 
+% the next triple has the same subject--predicate combination as the 
+% previous, thus a comma is followed by only an object. Moreover the 
+% symbol `\texttt{a}', which is the relation of an entity (in subject 
+% position) to its type (in the object position), is technically an 
+% alias for \verb|<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>|; 
+% this is used quite a lot below.
+% 
+% 
+% \section{Vocabulary}
+% 
+% \iffalse
+% Technically, symbols in RDF are arbitrary IRIs (Internationalised 
+% Resource Identifiers), and most of them look like web URLs, but in 
+% practical source code most of them are written as \emph{prefixed names}, 
+% on the form \meta{prefix}\texttt{:}\meta{local part}, where the 
+% \meta{prefix} has first been bound to some IRI (or initial part 
+% thereof) that serves as a namespace, and the actual reference is 
+% formed by appending the \meta{local part} to that to which the prefix 
+% is bound. In principle the choice of 
+% \meta{prefix} in any particular document is arbitrary, but there is 
+% a strong tradition of using specific prefixes for each vocabulary.
+% \fi
+% 
+% \begin{rdfname}{prefix}[cmo]{}
+%   Most of the IRIs defined here have the prefix \texttt{cmo}, for 
+%   Catalogue of Mathematical Objects. At the point of writing this, 
+%   I have no idea what would be an appropriate IRI to bind this to, 
+%   but luckily that is no obstacle to writing examples illustrating 
+%   the use of this vocabulary. (It is however an obstacle to 
+%   getting those examples processed.)
+% \end{rdfname}
+% 
+% \begin{rdfname}{prefix}[]{}
+%   The empty prefix is used for what could be example nodes in the 
+%   catalogue database. Below, \emph{this prefix only appears in 
+%   examples}, and the \meta{local part}s used are often much shorter 
+%   than they ought to be in a realistic database attempting to cover 
+%   all of mathematics. The examples aim for readability, not realism.
+% \end{rdfname}
+% 
+% 
+% 
+% \subsubsection*{Naming principles}
+% 
+% A first principle (for the \texttt{cmo} namespace) is to pick names 
+% that make sense for members of the community (mathematicians) that 
+% will be contributing the data, 
+% rather than names as used by experts on the semantic web. The 
+% latter community is used to having to corral domain-specific 
+% vocabularies, whereas the former community is not familiar with 
+% semantic web conventions, so the latter should have less trouble 
+% coping. Arguably, there can even be a point in providing 
+% \texttt{cmo:}~symbols which more-or-less duplicates symbols from 
+% other ontologies, because this will spare users from having to come 
+% to grips with multiple specifications. (The \Module{schema} is 
+% however better defined using standard symbols such as 
+% \texttt{rdfs:label}, since \emph{that} will not be edited by people 
+% unfamiliar with the semantic web.)
+% 
+% \begin{remark}
+%   Certain terminology in the \texttt{rdf}, \texttt{rdfs}, and 
+%   \texttt{owl} specifications, particularly the use of `class' and 
+%   `property', strikes a mathematician as being rather odd. The 
+%   etymology appears to be a somewhat shaky analogy with 
+%   Object-Oriented Programming~(OOP), presumably because of the 
+%   zeitgeist at the turn of the millenium.
+%   
+%   First, RDF subjects are likened to OOP objects; though it sounds 
+%   odd, this actually makes grammatical sense, in that OOP objects 
+%   are more like the subjects of ordinary sentences than they are 
+%   like grammatical objects: OOP objects \emph{do} things, which is 
+%   the grammatical role of subjects (in the active voice). 
+%   Less obvious is the inference that since OOP 
+%   objects are instances of OOP classes, a collection of 
+%   subject-capable RDF terms has to be an RDF(S) class---there are 
+%   aspects of the two kinds of classes that behave quite 
+%   differently---but that is the way it was done. 
+%   
+%   Second, and more confusingly, the 
+%   assertion of an RDF triple is thought of as attaching data to the 
+%   subject. Since the way that is done in OOP is by storing said data 
+%   in an object-local variable, and since such variables are called 
+%   ``properties'' in important branches of OOP, it followed that 
+%   predicates had to be called `properties'. Reading `relation' 
+%   where those specifications say `property' will make everything 
+%   much clearer for a mathematician (for example there may be 
+%   symmetric ``properties'' and transitive ``properties'').
+% \end{remark}
+% 
+% 
+% A second principle will be to first try naming things in a way that 
+% would give the plainest possible English reading of the triples that 
+% one would like to assert, and then check if this seems to be 
+% practical from a technical point of view (e.g.~the subject cannot be 
+% a literal; if one is making a group of claims then it is more 
+% convenient if they share a subject, or subject--verb combination, 
+% than them having the same object).
+% 
+% Looking at how things come out, it might also be that there is a 
+% slight preference for present tense of verbs. This is probably a 
+% reflection of the timeless nature of mathematics.
+% 
+% 
+% \subsection{Catalogue core}
+% 
+% 
+% \begin{rdfname}{verb}{called}
+%   First, it is useful to attach human-readable names to the entities 
+%   in the catalogue. In the general mathematical literature, it is 
+%   however common that multiple names are used to denote the same 
+%   thing, and conversely the same name may be used to denote many 
+%   different things---`normal', `regular', `irreducible', and 
+%   `simple' being some names particularly prolific in acquiring 
+%   different meanings---so the relation between a thing and its name 
+%   is in general many-to-many. Thus it makes sense to pick a verb 
+%   that acknowledges that.
+%    \begin{macrocode}
+cmo:called a rdf:Property
+         ; rdfs:label "can be called" .
+%</schema>
+%    \end{macrocode}
+%   One can probably make a good argument for the position that the 
+%   well-known \texttt{rfds:label} symbol already has the sought 
+%   semantics, and thus that we could just as well have used that. 
+%   There is however a point in not subjecting the \emph{users} of 
+%   this vocabulary to the complexity of having to juggle multiple 
+%   namespaces already when saying very basic things; advanced users 
+%   who know about RDFS can also be expected to know how to treat the 
+%   two symbols as equivalent where appropriate. Those advanced 
+%   enough to read the \Module{schema} should however be familiar 
+%   with \texttt{rdfs:label}, and thus it makes sense to use 
+%   \emph{that} for naming the symbols of the \texttt{cmo:} 
+%   vocabulary.
+%   
+%    \begin{macrocode}
+%<*example>
+:Petersen cmo:called "the Petersen graph"@en .
+:K4 cmo:called "the complete graph on 4 vertices"@en .
+:W6 cmo:called "the wheel graph of order 6"@en .
+%    \end{macrocode}
+%   Since RDF has language-tagged strings, there does not seem to be 
+%   any need for having separate variants of \texttt{called} for 
+%   different languages.
+%    \begin{macrocode}
+:Petersen cmo:called "Petersengrafen"@sv .
+:K4 cmo:called "kompletta grafen med 4 hörn"@sv .
+:W6 cmo:called "hjulgrafen med 6 hörn"@sv .
+%</example>
+%    \end{macrocode}
+%   Another possible variation could be that of assigning 
+%   \emph{preferred} names\label{Ssec:PreferredLabel} for things, as 
+%   does the \texttt{skos:prefLabel} symbol. For the Catalogue, which does not 
+%   have a central moderator or authority, this is probably something 
+%   one should hold off on, because who would get to decide what is 
+%   the preferred label? There is no obvious advantage to having a 
+%   \texttt{cmo:}~verb for asserting a preferred label.
+% \end{rdfname}
+% 
+% 
+% \begin{rdfname}{type}{Object}
+%   The most important entities in the Catalogue are the 
+%   \emph{objects} of which it is a catalogue.
+%    \begin{macrocode}
+%<*schema>
+cmo:Object a rdf:type
+         ; rdfs:label "mathematical object" .
+%    \end{macrocode}
+%   These are not documents, but rather abstract objects existing 
+%   (in whatever sense you find philosophically acceptable) within 
+%   the Platonic realm of ideas.
+%   
+%   It is quite common in the wild that what people present as 
+%   examples have undetermined parameters---it may for example happen 
+%   that it doesn't matter much for the point an author is making 
+%   whether the scalars are real numbers, complex numbers, or 
+%   something else entirely---so it is to be expected that some 
+%   \texttt{cmo:Object}s are created which correspond more to a 
+%   family of things than to one specific thing. That situation is 
+%   explicitly allowed.
+% \end{rdfname}
+% 
+% \begin{rdfname}{type}{Property}
+%   The second most important entities in the Catalogue are then the 
+%   properties used to characterise objects so that one can search 
+%   for them.
+%    \begin{macrocode}
+cmo:Property a rdf:type
+           ; rdfs:label "a quality an object can have, or not have".
+%</schema>
+%    \end{macrocode}
+%   Suppose we're looking for the property `regular', in preparation 
+%   for composing a search for objects having this property. That 
+%   could be simply
+%    \begin{macrocode}
+%<*query>
+SELECT ?p WHERE {
+   ?p a cmo:Property .
+   ?p cmo:called "regular"@en .
+}
+%    \end{macrocode}
+%   We could also look for less exact matches.
+%    \begin{macrocode}
+SELECT ?p WHERE {
+   ?p a cmo:Property .
+   ?p cmo:called ?n .
+   FILTER ( contains(?n,"regul") && langMatches(lang(?n), "en") )
+}
+%</query>
+%    \end{macrocode}
+%   Of course, a problem is that there are many properties which can 
+%   be called just `regular': regular (graph), regular (matroid), 
+%   regular (algebra), regular (category), regular (measure), regular 
+%   (space), regular (point), to name a few. Such searches in a web 
+%   user interface would want to extract more information about each 
+%   property so that they can be disambiguated in the result.
+% \end{rdfname}
+% 
+% Many properties are grammatically adjectives, such as `regular', 
+% `irreducible', `atomic', and `analytic'. Other properties are 
+% more the name of a type of things, such as `ring', `graph', 
+% `function', and `line'; grammatically rather nouns. It does however 
+% make sense to make \texttt{cmo:Property} one common type of entity, 
+% because the grammatical distinction is often a matter of 
+% perspective; what is 
+% expressed using an adjective in one language might be a noun in 
+% another. Certainly \emph{snark} is a noun (denoting a subclass of 
+% graph), but when one in informal text says `let $G$ be a snark' then 
+% practically this is more about asserting the snarkiness of $G$ 
+% (that $G$ has the required properties) than about identifying any 
+% substance from which $G$ was made.
+% 
+% \begin{rdfname}{verb}{is}
+%   To claim an object has a particular property, one uses the verb 
+%   \texttt{is}. This allows one to make claims like:
+%    \begin{macrocode}
+%<*example>
+:K4 cmo:is :graph, :regular, :planar, :Hamiltonian .
+:Petersen cmo:is :graph, :regular .
+:sin cmo:is :function, :odd, :analytic, :periodic, :bounded .
+:W6 cmo:is :graph, :planar, :Hamiltonian .
+%</example>
+%    \end{macrocode} \label{Example:sin-function}
+%   Grammatically, the fact that is\slash be is a \emph{copulative} 
+%   verb in English (and many other languages) means it is followed 
+%   by a \emph{predicative}, which is a more general kind of phrase 
+%   than the object required by ordinary verbs; a predicative can 
+%   just as well be an adjective as a noun, exactly like a 
+%   \texttt{cmo:Property} may be.
+%   
+%   To formally express that \texttt{cmo:is} is a relation that 
+%   \texttt{cmo:Object}s may have to \texttt{cmo:Property}s, one 
+%   would assert:
+%    \begin{macrocode}
+%<*schema>
+cmo:is a rdf:Property 
+     ; rdfs:label "has the property of" 
+     ; rdfs:domain cmo:Object
+     ; rdfs:range cmo:Property .
+%    \end{macrocode}
+%   The technical effect of these \texttt{rdfs:domain} and 
+%   \texttt{rdfs:range} assertions is that anything that gets used as 
+%   the subject of an \texttt{cmo:is} counts as a mathematical 
+%   object, and anything used as the object of it counts as a 
+%   mathematical property. Thus it would not be a big deal if someone 
+%   forgets to explicitly declare an object as such.
+% \end{rdfname}
+% 
+% \begin{rdfname}{verb}{isnt}
+%   Almost as important is the ability to assert that a mathematical 
+%   object does \emph{not} have a particular property, because it is 
+%   often the want for an example which lacks a particular property 
+%   that causes one to go hunting for nonobvious examples.
+%    \begin{macrocode}
+cmo:isnt a rdf:Property 
+       ; rdfs:label "does not have the property of" 
+       ; rdfs:domain cmo:Object
+       ; rdfs:range cmo:Property .
+%</schema>
+%<*example>
+:Petersen cmo:isnt :planar, :Hamiltonian .
+:W6 cmo:isnt :regular .
+:sin cmo:isnt :even, :positive .
+%</example>
+%    \end{macrocode}
+%   We are now able to compose a search for an example which is $A$, 
+%   $B$, and $D$ but not $C$.
+%    \begin{macrocode}
+%<*query>
+SELECT ?e WHERE {
+   ?e a cmo:Object .
+   ?e cmo:is :A .
+   ?e cmo:is :B .
+   ?e cmo:isnt :C .
+   ?e cmo:is :D .
+}
+%</query>
+%    \end{macrocode}
+%   (Technically, the `\texttt{?e a cmo:Object}' pattern is redundant 
+%   because of the \texttt{rdfs:domain} declaration on 
+%   \texttt{cmo:is}, but it could help with human comprehension of 
+%   this example. Performance-wise it might even hurt a bit, since 
+%   there are likely more matches for `\texttt{?e a cmo:Object}' 
+%   than for `\texttt{?e cmo:is :A}'.)
+% \end{rdfname}
+% 
+% Observe that there is a difference between having `$x$ 
+% \texttt{cmo:isnt} $B$' and not having `$x$ \texttt{cmo:is} $B$'. 
+% Having a triple in the database is similar to \emph{knowing} 
+% something to be the case, and the situation of not knowing 
+% whether $B$ or not-$B$ is perfectly normal.
+% 
+% More interesting is the situation of having both `$x$ 
+% \texttt{cmo:is} $B$' and `$x$ \texttt{cmo:isnt} $B$'. This is 
+% still not an ontological error, but it is something the Catalogue 
+% should flag as in need of human attention. Practically, already 
+% the user seeking to add the second of these should be requested 
+% to review (see also Subsection~\ref{Ssec:Review}) the conflict.
+% 
+% \begin{rdfname}{verb}{implies}
+%   Humans will rarely bother to state everything that could be said, 
+%   but rather aim for the strongest claim that is true. Hence it 
+%   becomes useful for the database to keep track of how properies 
+%   would imply each other, so that it can find matches against 
+%   triples that have gone unstated.
+%    \begin{macrocode}
+%<*schema>
+cmo:implies a rdf:Property
+          ; rdfs:label "implies"
+          ; rdfs:domain cmo:Property
+          ; rdfs:range cmo:Property .
+%</schema>
+%    \end{macrocode}
+%   The semantics of \texttt{cmo:implies} are probably best laid out 
+%   as SPARQL rules.
+%    \begin{macrocode}
+%<*rules>
+CONSTRUCT {?x cmo:is ?z} WHERE {
+   ?x cmo:is ?y .
+   ?y cmo:implies ?z
+}
+CONSTRUCT {?x cmo:isnt ?z} WHERE {
+   ?x cmo:isnt ?y .
+   ?z cmo:implies ?y
+}
+%</rules>
+%    \end{macrocode}
+%   Thus from the above and
+%    \begin{macrocode}
+%<*example>
+:cubic a cmo:Property
+     ; cmo:called "cubic"@en, "3-regular"@en
+     ; cmo:implies :regular .
+:Dürer cmo:is :cubic .
+%</example>
+%    \end{macrocode}
+%   one could infer \texttt{:Dürer cmo:is :regular} and \texttt{:W6 
+%   cmo:isnt :cubic}, but not \texttt{:Petersen cmo:is :cubic} (even 
+%   though it is) since there is not enough information in these 
+%   examples to conclude that.
+%   
+%   As it turns out, it is possible to impose those rules also using 
+%   OWL, but not at all as clearly.
+%    \begin{macrocode}
+%<*schema>
+[ owl:propertyChainAxiom ( cmo:is cmo:implies ) ]
+   rdfs:subPropertyOf cmo:is .
+%    \end{macrocode}
+%   (The parenthesis is in Turtle syntactic sugar for list 
+%   construction, and in this case the bracket does a kind of 
+%   function application. In general the bracket is more like notation 
+%   for the solution to a constraint problem, at a lower level 
+%   encoded using an anonymous blank node.)
+%   Technically that says: the relation composition of 
+%   \texttt{cmo:is} and \texttt{cmo:implies} is a subset of 
+%   \texttt{cmo:is}; this is indeed a more abstract way of stating 
+%   the above \texttt{cmo:is} rule. For \texttt{isnt}, the 
+%   composition is instead with the inverse\slash opposite of 
+%   \texttt{implies}.
+%    \begin{macrocode}
+[ owl:propertyChainAxiom ( 
+   cmo:isnt 
+   [ owl:inverseOf cmo:implies ]
+) ] rdfs:subPropertyOf cmo:isnt .
+%    \end{macrocode}
+%   One more thing that ought to get put in the schema is the 
+%   information that \texttt{implies} is transitive. This should not 
+%   affect what \texttt{is} or \texttt{isnt}s that can be inferred, 
+%   but it could be useful for other purposes.
+%    \begin{macrocode}
+cmo:implies a owl:TransitiveProperty .
+%</schema>
+%    \end{macrocode}
+%   
+%   Alternatively, an inferrence engine can be dispensed with, at the 
+%   cost of a more complex query using property paths. The search for 
+%   an example which is $A$, $B$, and $D$ but not $C$ would become
+%    \begin{macrocode}
+%<*query>
+SELECT ?e WHERE {
+   ?e a cmo:Object .
+   ?e cmo:is/cmo:implies* :A .
+   ?e cmo:is/cmo:implies* :B .
+   ?e cmo:isnt/^cmo:implies* :C .
+   ?e cmo:is/cmo:implies* :D .
+}
+%</query>
+%    \end{macrocode}
+%   The predicates of those patterns are (SPARQL~1.1) \emph{property 
+%   paths}, where \verb|/| denotes sequence (first the predicate on 
+%   the left, then take the object of its triple as subject for the 
+%   predicate on the right), \verb|*| denotes zero or more 
+%   repetitions (path length not fixed), and \verb|^| denotes 
+%   reversal (swap subject and object of predicate).
+% \end{rdfname}
+% 
+% 
+% Because it is recognised that \texttt{cmo:Object}s may be families 
+% of objects as well as individual objects, there is also a need to 
+% clarify the semantics of \texttt{cmo:is} and \texttt{cmo:isnt} with 
+% respect to this: When is it okay to claim for example the 
+% $n$-vertex complete graph $K_n$ has (or hasn't) a particular property, 
+% and when is it not okay? We can formalise this, if we know how 
+% objects are special cases of each other.
+% 
+% \begin{rdfname}{verb}{instantiates}
+%   The idea here is that `$A$ \texttt{cmo:instantiates} $B$' if $A$ 
+%   may be obtained from $B$ by restricting the values of free 
+%   parameters in $B$, or something to that effect. (The name feels 
+%   like it should be possible to improve.)
+%    \begin{macrocode}
+%<*schema>
+cmo:instantiates a rdf:Property, owl:TransitiveProperty 
+               ; rdfs:label "is an instance of"
+               ; rdfs:domain cmo:Object
+               ; rdfs:range cmo:Object .
+%</schema>
+%    \end{macrocode}
+%   The logic for this verb is rather than anything claimed about a 
+%   family must hold for all instances of that family.
+%    \begin{macrocode}
+%<*rules>
+CONSTRUCT {?A cmo:is ?p} WHERE {
+   ?A cmo:instantiates ?B .
+   ?B cmo:is ?p
+}
+CONSTRUCT {?A cmo:isnt ?p} WHERE {
+   ?A cmo:instantiates ?B .
+   ?B cmo:isnt ?p
+}
+%</rules>
+%    \end{macrocode}
+%   Thus, in mind of
+%    \begin{macrocode}
+%<*example>
+:Kn a cmo:Object
+  ; cmo:called "complete graph"@en, "complete graph on n vertices"@en
+  ; cmo:is :graph .
+:K4 cmo:instantiates :Kn .
+:Pn a cmo:Object
+  ; cmo:called "path graph"@en, "path graph on n vertices"@en
+  ; cmo:is :graph, :planar .
+:K2 cmo:called "the complete graph on 2 vertices"@en,
+  ; cmo:instantiates :Kn, :Pn 
+  ; cmo:is :graph, :regular
+  ; cmo:isnt :Hamiltonian .
+%</example>
+%    \end{macrocode}
+%   it would not be correct to claim \texttt{:Pn cmo:isnt :regular}, 
+%   because it has the instance \texttt{:K2} which in fact 
+%   \texttt{cmo:is :regular}. Nor would it be correct to claim 
+%   \texttt{:Kn cmo:is :Hamiltonian}, because \texttt{:K2} fails to 
+%   be that. One may however conclude \texttt{:K2 cmo:is :planar}, 
+%   because it is an instance of \texttt{:Pn}.
+%   
+%   As before, we can translate those rules to schema assertions.
+%    \begin{macrocode}
+%<*schema>
+[ owl:propertyChainAxiom ( cmo:instantiates cmo:is ) ]
+   rdfs:subPropertyOf cmo:is .
+[ owl:propertyChainAxiom ( cmo:instantiates cmo:isnt ) ]
+   rdfs:subPropertyOf cmo:isnt .
+%</schema>
+%    \end{macrocode}
+%   
+%   A more subtle instantiation may also be appropriate for the 
+%   function \texttt{:sin} claimed to be \texttt{:bounded} on 
+%   page~\pageref{Example:sin-function}. The function \(\sin\colon 
+%   \mathbb{R} \longrightarrow \mathbb{R}\) is indeed bounded, but 
+%   its extension \(\sin\colon \mathbb{C} \longrightarrow 
+%   \mathbb{C}\) is not. Likewise, the exponential function 
+%   \(\exp\colon \mathbb{R} \longrightarrow \mathbb{R}\) is positive, 
+%   but its extension \(\exp\colon \mathbb{C} \longrightarrow 
+%   \mathbb{C}\) is not. It follows from the above semantics that 
+%   these real functions are \emph{not} instantiations of their 
+%   complex counterparts---the relation that exists is rather one of 
+%   being a restriction, which preserves some properties but not 
+%   others---but one could regard both the real and the complex 
+%   functions as being different instantiations of some common more 
+%   abstract \texttt{cmo:Object}s, for example the power series
+%   \begin{align*}
+%     \sin(x) ={}& \sum_{k=0}^\infty \frac{(-1)^k}{(2k+1)!} x^{2k+1}
+%     \text{,}&
+%     \exp(x) ={}& \sum_{n=0}^\infty \frac{1}{n!} x^n
+%     \text{.}
+%   \end{align*}
+%   Some properties of $\exp$ can be claimed also in this 
+%   generality, for example \(\exp(x +\nobreak y) = \exp(x)\exp(y)\) 
+%   (provided $x$ and $y$ commute). Making the intended context 
+%   explicit could however be a difficulty for those who set out to 
+%   define such abstract objects.
+% \end{rdfname}
+% 
+% This core is now quite nicely rounded: we can formulate queries to 
+% seek out appropriate examples, if necessary first identify the right 
+% properties by what they are called, and will get back a list of 
+% objects as examples. However, that will not help us much if we are 
+% not already familiar with those examples! We need definitions.
+% 
+% 
+% \subsection{Defining materials}
+% 
+% A natural first thought is that each object and property should 
+% have an attached \texttt{Definition}, so that one knows what it is 
+% \texttt{definedAs}. Here, it must however be observed that there is 
+% a slightly simpler word for linking a thing and its definition, 
+% namely \texttt{defines}. The stated naming principle thus suggests 
+% that we should first try using that. What would the consequences of 
+% this be, and would we like them?
+% 
+% A first consequence of
+% \[
+%   \text{saying} \quad 
+%   \text{`$A$ \texttt{cmo:defines} $B$'} \quad 
+%   \text{rather than} \quad
+%   \text{`$B$ \texttt{cmo:definedAs} $A$'}
+% \]
+% is that it puts the 
+% definition in the subject position, rather than the object 
+% position. This has the technical implication that the definition 
+% cannot be a text literal, and instead has to be a full node (IRI, 
+% or possibly a blank). Is that a clear disadvantage of saying 
+% \texttt{defines}?
+% 
+% Actually, forcing all definitions to be IRIs might not be such a 
+% bad thing, because it makes it more natural to claim things about 
+% the definitions. Why would one want to do that? Well, one reason is 
+% that some concepts can be defined in very many different ways, and 
+% not all definitions are comprehensible to all readers. There are for 
+% example a number of definitions which rely upon universal 
+% properties, and whereas those may be very compact and powerful, 
+% they would also strike most basic level students as complete 
+% gobbedygook, so those students would \emph{not} be well served by 
+% the Catalogue fronting such definitions. How could the Catalogue 
+% know not to do that? One approach is to tag definitions according 
+% to the concepts they use, and then give preference to definitions 
+% that make do with familiar concepts. This is far less cumbersome to 
+% do if the definitions have a distinct IRI. Also note that 
+% such tagging is better off \emph{not} being part of the definition 
+% as such, since that allows for one person writing the definition 
+% and others on equal footing providing tag annotations. Should such 
+% annotations be widespread practice then experienced writers will 
+% likely take care to provide annotations already from the start, but 
+% there will likely be omissions and material written by novices, so 
+% having priviledged positions for some tags is just needless 
+% complication.
+% 
+% Another reason the definition may be better off in the subject 
+% position is that definitions often define several concepts. 
+% Sometimes this is because defining $B$ when you've done $A$ is just 
+% one extra sentence, and then it would look odd to create a separate 
+% numbered definition just for $B$, but other times two concepts are 
+% so interrelated that you cannot define one without defining the 
+% other, and then insisting on independent definitions is just silly. 
+% Relating one subject to several objects is convenient, whereas the 
+% opposite is less so.
+%    \begin{macrocode}
+%<*example>
+:Def22 cmo:defines :degree, :regular, :cubic, :leaf .
+%</example>
+%    \end{macrocode}
+% 
+% Saying \texttt{defines} rather than \texttt{definedAs} also invites 
+% a more open mode of thinking about definitions. The syntax `$A$ 
+% \texttt{definedAs} $B$' suggests that $B$ is the one true 
+% definition of $A$, which is what you have in each formal system, 
+% and typically also what you have in an individual publication, but 
+% it is not at all what the literature taken together looks like. For 
+% the Catalogue to single out one definition as the proper one would 
+% require there to be a moderating authority, but that is not 
+% organisatorially realistic. Better then to not even suggest that 
+% some definition might be priviledged.
+% 
+% \medskip
+% 
+% Then what kind of entity is ``a definition''? This is perhaps not 
+% so easy to put a label on. Certainly a paragraph of text is one 
+% form it could take, but by no means the only one. Sometimes a 
+% figure such as
+% \[
+%   \begin{tikzpicture}
+%     \draw[every node/.style={circle,draw}]
+%       node (v1) at (0,0) {} 
+%       node (v2) at (1,1) {}
+%       node (v3) at (2.5,1){}
+%       node (v4) at (3.5,2){}
+%       node (v5) at (3.5,0){} 
+%       node (v6) at (0,2){}
+%       (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v3) ;
+%   \end{tikzpicture}
+%   \iffalse :Petersen
+%   \begin{tikzpicture}
+%     \path[every node/.style={circle,draw}]
+%       node (v0) at (0,0){}
+%       node (v1) at (10:3cm){}
+%       node (v2) at (50:3cm){}
+%       node (v3) at (90:3cm){}
+%       node (v4) at (130:3cm){}
+%       node (v5) at (170:3cm){}
+%       node (v6) at (210:3cm){}
+%       node (v7) at (250:3cm){}
+%       node (v8) at (290:3cm){}
+%       node (v9) at (330:3cm){}
+%     ;
+%     \draw (v1) -- (v2) -- (v3) -- (v4) -- (v5) -- (v6) -- (v7)
+%       -- (v8) -- (v9) -- (v1)
+%       (v3) -- (v0)  (v6) -- (v0)  (v9) -- (v0)
+%       (v1) -- (v5)  (v2) -- (v7)  (v4) -- (v8);
+%   \end{tikzpicture}
+%   \fi
+% \]
+% is the most efficient way of explaining what an object is. Other 
+% media might turn out to be natural for other kinds of object---in 
+% particular there are some classes of mathematical objects for which 
+% there are commonly used machine-readable encodings---so what would 
+% be an appropriate blanket term?
+% \begin{description}
+%   \item[Document]
+%     is one possibility, but that could be misleading. These things 
+%     are sometimes documents of their own, but more often just a 
+%     piece of some document.
+%   \item[Content]
+%     (as in ``content management system'') is another possibility, 
+%     but again could lead the mind astray; we are certainly not 
+%     dealing with something $\in$ or $\subseteq$ here. This use of 
+%     the word is common in the media business, but less so in the 
+%     general language or academia.
+%   \item[Material]
+%     (as in ``copyrighted material'', which indeed would be an issue 
+%     to consider for this) is a third possibility. Could again lead 
+%     the mind astray towards physical things, but on the other hand 
+%     mathematicians are typically familiar with the concept of 
+%     course materials.
+% \end{description}
+% So provisionally `material' might be the best choice.
+% 
+% \begin{rdfname}{type}{Material}
+%   Summarising the above, a \texttt{cmo:Material} is anything that 
+%   can be used to define something.
+%    \begin{macrocode}
+%<*schema>
+cmo:Material a rdf:type
+           ; rdfs:label "any kind of media content" .
+%    \end{macrocode}
+% \end{rdfname}
+% 
+% \begin{rdfname}{verb}{defines}
+%   One needs to \texttt{define} objects as well as properties, and 
+%   quite possiby more things besides, so there is no point right now 
+%   in restricting the range of \texttt{cmo:defines}.
+%    \begin{macrocode}
+cmo:defines a rdf:Property
+          ; rdfs:label "defines"
+          ; rdfs:domain cmo:Material .
+%    \end{macrocode}
+% \end{rdfname}
+% 
+% However, is the \texttt{Material} (text or otherwise) the definition 
+% \emph{as such}, or just a presentation thereof? Taking the 
+% derivative as example of something with a definition, the standard 
+% definition is that $f$ is differentiable at $a$ if
+% \begin{equation} \label{Eq1:Derivative}
+%   \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}
+% \end{equation}
+% exists, and then that limit gives the value $f'(a)$ at $a$ of the 
+% derivative $f'$. An alternative way of stating that limit is however
+% \begin{equation} \label{Eq2:Derivative}
+%   \lim_{x \to a} \frac{f(x) - f(a)}{x-a}
+% \end{equation}
+% and a limit-free definition of derivative is that $f$ is 
+% differentiable at $a$ if there exists a function $K_a$ such that
+% \begin{equation} \label{Eq3:Derivative}
+%   f(x) = f(a) + K_a(x) (x-a) \text{ for all $x$}
+%   \quad\text{and}\quad
+%   \text{$K_a$ is continuous at $a$,}
+% \end{equation}
+% in which case the value $f'(a)$ at $a$ of the derivative $f'$ is 
+% $K_a(a)$. Here it could be argued that \eqref{Eq1:Derivative} and 
+% \eqref{Eq2:Derivative} are the same definition with slightly 
+% different presentations, whereas \eqref{Eq3:Derivative} is a 
+% different (although equivalent, and this equivalence is not as 
+% remote as it may seem) definition of the same thing.
+% 
+% Do we want an entity that unifies \eqref{Eq1:Derivative} and 
+% \eqref{Eq2:Derivative} while being distinct from 
+% \eqref{Eq3:Derivative}, and if so should \texttt{cmo:Material} be 
+% the type of such entities, or should materials rather be about the 
+% presentation? Here, one may first observe that the utility of such 
+% an intermediate entity type seems limited, which speaks against 
+% formalising such a role. One might want to avoid reporting several 
+% trivial rephrasings of a definition, but that is perhaps better 
+% based on claims that two presentations are close matches than on 
+% claims that they are both instances of the same idea for a 
+% definition; there are bound to be differences of opinion on the 
+% latter matter. Some readers may \emph{want} to be shown both 
+% \eqref{Eq1:Derivative} and \eqref{Eq2:Derivative} because they do 
+% not consider the transformation of one into the other to be 
+% obvious, and this also speaks against combining the two into one 
+% entity. So it appears \texttt{cmo:Material} should indeed be about 
+% the presentation rather than the essence.
+% 
+% A consequence of \emph{that} is that \emph{translations} of a 
+% definition (or whatever) becomes a separate definition, not another 
+% value for the same entity. This actually makes sense, because 
+% translating things is not always trivial; even if one sets out to 
+% merely reproduce the same content in a different language, the end 
+% result need not be quite the same.
+% 
+% \begin{rdfname}{verb}{says}
+% \begin{rdfname}{verb}{mimetype}
+%   Following the above argument, there should be a verb associating 
+%   materials with literal content. It is probably prudent to also 
+%   have a verb encoding the format of this content.
+%    \begin{macrocode}
+cmo:says a rdf:Property
+       ; rdfs:label "content of material"
+       ; rdfs:domain cmo:Material 
+       ; a owl:FunctionalProperty .
+cmo:mimetype a rdf:Property
+           ; rdfs:label "MIME type of material"
+           ; rdfs:domain cmo:Material .
+%</schema>
+%    \end{macrocode}
+%   For example (in Turtle, triple quotes can delimit multiline 
+%   strings, but backslash remains an escape character so you need to 
+%   double those in that encoding):
+%    \begin{macrocode}
+%<*example>
+:Def22 cmo:says '''
+  The \\emph{degree} of a vertex is the number of incidences it has 
+  with edges; a loop contributes $2$ to the degree of the vertex 
+  with which it is incident. A \\emph{leaf} is a vertex of degree~$1$. 
+  A graph is \\emph{$k$-regular} if all vertices in it have degree $k$, 
+  and \\emph{regular} if it is $k$-regular for some $k$. \\emph{Cubic} 
+  is a common synonym of $3$-regular. 
+'''@en ; cmo:mimetype "application/x-latex" .
+%</example>
+%    \end{macrocode}
+%   MIME types are not very expressive when it comes to specialised 
+%   formats (so perhaps we need additional verbs), but at least it 
+%   caters for common multimedia formats (images, video, etc.) that 
+%   mathematicians are unlikely to take a detailed interest in the 
+%   details of---those should just work.
+% \end{rdfname}\end{rdfname}
+% 
+% 
+% \subsubsection{\LaTeX}
+% 
+% If the Catalogue contributors are going to write \emph{serious} 
+% mathematics, then they will need to have \LaTeX---by which I mean 
+% the real deal, not some HTMLish emulation---because that is how 
+% proper research gets written. In particular, asking contributors to 
+% conform to anything less will likely alienate parts of the 
+% population which we want to have contributing.
+% 
+% A consequence of this is that full reports from searches in the 
+% database will probably be in PDF format, produced by typesetting a 
+% \LaTeX\ document assembled from materials in the Catalogue. This 
+% need not be the only possible form of report---it is likely that 
+% completely off-the-shelf tools for converting \LaTeX\ to (X)HTML 
+% could still get 90\% of all materials completely right, so 
+% reports in the form of a webpage can be useful too---but typeset 
+% \LaTeX\ should be considered the primary form of report, on account 
+% of being most like the conventionally published mathematical 
+% literature.
+% 
+% \begin{rdfname}{verb}{usepackage}
+%   A complication when assembling disparate pieces of \LaTeX\ text 
+%   is that they have expectations on their environment; in 
+%   particular they often make use of commands defined by some 
+%   package, requiring a corresponding \verb|\usepackage| to appear 
+%   in the preamble. This information is of course metadata that can 
+%   be attached to the material.
+%    \begin{macrocode}
+%<*schema>
+cmo:usepackage a rdf:Property
+             ; rdfs:label "needs the package" 
+             ; rdfs:domain cmo:Material .
+%</schema>
+%<*example>
+:Def42 a cmo:Material
+     ; cmo:says '''
+  A number \\(z \\in \\mathbb{C}\\) is an \\emph{algebraic integer} 
+  if there is some \\(n>0\\) and \\(a_0,\\dotsc,a_{n-1} \\in 
+  \\mathbb{Z}\\) such that \\(z^n + \\sum_{k=0}^{n-1} a_k z^k = 0\\).
+'''@en
+     ; cmo:mimetype "application/x-latex" 
+     ; cmo:usepageage "amsmath", "amsfonts" .
+%</example>
+%    \end{macrocode}
+%   Here we should however keep in mind that:
+%   \begin{enumerate}
+%     \item
+%       Commands defined by standard packages are \emph{not} going to 
+%       cover all needs; some packages are rather set up to provide 
+%       utilities so that you can easily define the body commands 
+%       yourself. But being able to request a \verb|\usepackage| 
+%       should be a start that suffices for many basic needs.
+%     \item
+%       Not all packages are compatible (especially if they aim to 
+%       provide similar functionality); we may therefore find 
+%       ourselves in the situation that two \texttt{cmo:Material}s 
+%       cannot be placed in the same \LaTeX\ document! This is 
+%       however not the same as not being able to generate a typeset 
+%       report with both; a brute method (that you can carry out with 
+%       pdf\TeX\ as the only tool) is to first typeset one 
+%       document with some pages of the report, and then typeset 
+%       another document with the rest of the pages, including the 
+%       pages from the first as PDF graphics.
+%   \end{enumerate}
+% \end{rdfname}
+% 
+% I would maintain that it is perfectly feasible (see 
+% Subsection~\ref{Ssec:LaTeXSubmit}) to moreover use 
+% \texttt{.tex} files as one format for submissions to the Catalogue: 
+% such a file would contain appropriate markup to encode a set of 
+% nodes and edges to be integrated into the Catalogue database, but 
+% during the authoring phase one can just \LaTeX\ it to get a typeset 
+% view of what is being said. Indeed, even upon submission the main 
+% parsing should be by \LaTeX\-ing, to prevent syntactic drift, and 
+% users should have the option of themselves typesetting their 
+% submissions with such parsing (this will likely involve writing 
+% various temporary files to which material gets copied) just to 
+% verify that everything parses as intended.
+% 
+% 
+% \subsubsection{Formalised mathematics}
+% 
+% The ability to support multiple languages was motivated by a need 
+% to support multiple natural languages, but nothing stops us from 
+% applying it also to artificial languages. In particular, there is 
+% no reason one cannot write definitions in the formal language of 
+% one or other automatic theorem prover. This means the Catalogue can 
+% be an area for \emph{joining} the worlds of informal and formalised 
+% mathematics; material might be written first in an informal 
+% language, and later supplemented with a machine-verifiable 
+% translation, but still attached to the same objects and properties. 
+% Making use of automated theorem provers can be one way of verifying 
+% that claims are correct, for those who prefer that benchmark.
+% 
+% Another use of having a collection that combines formalised and 
+% informal mathematics can be to use it as a corpus for training 
+% tools that aim to parse mathematical text. It would contain 
+% material on a wide variety of topics, written by a wide variety of 
+% authors, but at the same time be well categorised.
+% 
+% 
+% \subsubsection{Referencing the literature}
+% 
+% Having definitions in the Catalogue is the most reader-friendly 
+% solution, 
+% but sometimes it makes sense to rather reference the literature. 
+% For example, one may have explicitly defined one object, but find 
+% it prudent to point out that this also has a significant 
+% generalisation, the details of which there is no time to write out 
+% right now, but which can be found in a particular paper. 
+% This double definition provides useful information (full construction 
+% of the simpler variant) even for those with no immediate access to 
+% that piece of the literature.
+% 
+% Vocabularies for citing literature ought to exist already, so no 
+% need to reinvent that particular wheel.
+% 
+% One issue with the schema as given above could be that since it 
+% proclaims everything that \texttt{cmo:defines} something to be 
+% \texttt{cmo:Material}, and since \texttt{cmo:says} is functional, 
+% even definitions not spelled out inside the Catalogue would have to 
+% \texttt{say} something. Is that an issue? Maybe, but on the other 
+% hand that \texttt{cmo:says} could be used to more precisely explain 
+% where the definition is found, somewhat like the optional argument 
+% of \verb|\cite|.
+% 
+% 
+% \subsubsection{Concepts}
+% 
+% \begin{rdfname}{type}{Concept}
+%   The discussion at the start of this subsection also suggests that 
+%   one might want to keep track of \emph{concepts} as another type of 
+%   entity. What constitutes a concept is admittedly more vague.
+%    \begin{macrocode}
+%<*schema>
+cmo:Concept a ref:type
+          ; rdfs:label "a mathematical concept" .
+%    \end{macrocode}
+%   There is probably some overlap between concepts and 
+%   properties---linearity and boundedness are definitely concepts, 
+%   and it is perhaps not unreasonable to represent them using the 
+%   same IRIs as the properties `linear' and `bounded'---so a case 
+%   could be made to make \texttt{cmo:Concept} a superclass of 
+%   \texttt{cmo:Property}. On the other hand, it is likely that there 
+%   would be several different `linear' properties, and then it 
+%   suddenly becomes unclear which should be used for the concept of 
+%   linearity, so perhaps keeping them separate is better?
+% \end{rdfname}
+% 
+% \begin{rdfname}{verb}{uses}
+%   And what, in that discussion, concepts were \emph{for} is that 
+%   \texttt{cmo:Material} could use them. But can only material do 
+%   that? It seems plausible that for example the property `open' (as 
+%   in `open set') would use the `a topology' concept (`a topology' as 
+%   in `the Zariski toplogy'), but maybe that would be a different 
+%   verb. Either way, it seems best to not prematurely constrain this 
+%   verb.
+%    \begin{macrocode}
+cmo:uses a rdf:Property
+       ; rdfs:label "makes conceptual use of" .
+%</schema>
+%    \end{macrocode}
+% \end{rdfname}
+% 
+% In fact, allowing also properties to use concepts could help with 
+% the problem of how to find properties in the database. Searching by 
+% what something is \texttt{cmo:called} works well when the property 
+% has an established name, but lots of properties are more like 
+% ``satisfying that inequality from the NN Theorem'' and then it gets 
+% harier: even \emph{if} that has a name, \emph{you} know that name, 
+% \emph{and} the property actually is in the Catalogue, there is still 
+% a risk that the person who entered it did not know the name (or 
+% knew it by a different name). How about
+% \begin{equation} \label{Eq:Ore-condition}
+%   d(x) + d(y) \geqslant \bigl| \mathrm{V}(G) \bigr|
+%   \quad\text{for all nonadjacent \(x,y \in \mathrm{V}(G)\)}
+% \end{equation}
+% or
+% \begin{equation} \label{Eq:Fibonacci-property}
+%   a_m \mid a_n \quad\text{if}\quad m \mid n
+%   \text{?}
+% \end{equation}
+% \eqref{Eq:Ore-condition} is the Ore condition for a graph, and 
+% implies Hamiltonicity for simple graphs with $3$~vertices or more, 
+% whereas \eqref{Eq:Fibonacci-property} is a property nontrivially 
+% exhibited by the Fibonacci numbers. Are there names for these, and 
+% would these names be obvious?
+% 
+% If properties carries \texttt{cmo:uses} annotations, then one way 
+% of finding these could be to make a list of the stuff these 
+% properties make use of---maybe vertex degree, addition, graph order, 
+% and adjacency\footnote{
+%   Nonadjacency is more apt, but there is a significant risk of it 
+%   merely being stated as a negation of adjacency.
+% } for the first, number sequence and divisibility for 
+% the second---and then search for existing properties which use 
+% those things. This would likely not suffice for identifying these 
+% particular properties---ultimately one will have to read the 
+% definitions---but it should narrow down the search space to 
+% something manageable.
+% 
+% \medskip
+% 
+% In a different twist, it also seems reasonable to use 
+% \texttt{cmo:uses} to express that a \texttt{cmo:Material} makes 
+% use of a particular \texttt{cmo:Object}; whereas some definitions 
+% can be essentially standalone, others need to reference things 
+% which should not be assumed obvious.
+%    \begin{macrocode}
+%<*example>
+:Def312 a cmo:Material
+      ; cmo:uses :Petersen
+      ; cmo:defines :AutPetersen
+      ; cmo:says "The automorphism group of the Petersen graph."@en .
+%</example>
+%    \end{macrocode}
+% (As it happens, this \texttt{:AutPetersen} is the symmetric group 
+% $S_5$, but that is not obvious. The sanest way to enter this into 
+% the database is probably as claims to the effect that these two 
+% objects are isomorphic.)
+% 
+% 
+% \subsection{Nonobvious applications of the core}
+% 
+% \subsubsection{Catching duplication}
+% 
+% The direct application of a query
+%    \begin{macrocode}
+%<*query>
+SELECT ?e WHERE {
+   ?e a cmo:Object .
+   ?e cmo:is :A .
+   ?e cmo:is :B .
+   ?e cmo:isnt :C .
+   ?e cmo:is :D .
+}
+%    \end{macrocode}
+% is (as stated) to find examples of something which is $A$, $B$, and 
+% $D$, but not $C$. It could also serve to screen out some 
+% submissions that are straight duplicates of what is already present: 
+% if a user submits an object $x$ with that profile, and that is in 
+% fact already in the database as object $y$, then this search 
+% should find it. Then the Catalogue could respond ``please check 
+% these objects to see if any one of them is a duplicate of, or 
+% otherwise related to, the one you tried to submit.'' (Even if the 
+% mathematical object is in fact a duplicate, it can still happen 
+% that the new submission provides a useful new definition, but 
+% entering it as such would require the user to modify the 
+% submission.)
+% 
+% Another way of letting the Catalogue see that a submission is of 
+% something new would be if its property profile is distinct from 
+% those of all existing profiles. One way of making it so could be to 
+% mention a property besides those initially given that distinguishes 
+% it, but how to pick one? We can at least search for candidates.
+%    \begin{macrocode}
+SELECT ?x ?y ?z
+WHERE {
+   ?x a cmo:Object .
+   ?x cmo:is :A .
+   ?x cmo:is :B .
+   ?x cmo:isnt :C .
+   ?x cmo:is :D .
+   ?x cmo:is|cmo:isnt ?z .
+   ?x ?y ?z .
+   FILTER ( ?z NOT IN (:A, :B, :C, :D) )
+}
+%</query>
+%    \end{macrocode}
+% This literally states: find a triple `$x$ $y$ $z$' where $x$ is an 
+% object which is $A$, $B$, and $D$ but not $C$, the property $z$ is 
+% something besides $A,B,C,D$ that that $x$ \texttt{cmo:is} or 
+% \texttt{cmo:isnt}, and $y$ is that predicate. If you know the 
+% status of your object with respect to $z$, then this is your chance 
+% to make it stand out.
+% 
+% Conversely, if one submits a new property then it would similarly 
+% be possible to compare it against existing properties based on 
+% which objects have or haven't got this property. This can likewise 
+% be extended to a list of further objects whose status with respect 
+% to the new property is something you might want to add a claim 
+% about.
+% 
+% Of course, there is in either direction a risk that a duplicate is 
+% not found because the new submission provides a more detailed 
+% profile than what is already in the database. In that case one would 
+% like to search for ``objects which have three of the following 
+% properties and is silent about the fourth'', which is definitely 
+% doable, but might require some thought for how to optimally 
+% formulate it.
+% 
+% 
+% \subsubsection{Instatiation trickery}
+% 
+% A further relationship that \emph{could} be regarded as an 
+% instantiation is introducing extra data in an object, for 
+% example the pair $(\mathbb{R}^3,\times)$ of the $3$-dimensional 
+% real space $\mathbb{R}^3$ and the cross product $\times$ of 
+% vectors could be regarded as an instantiation of $\mathbb{R}^3$, 
+% under the argument that the latter is no different from 
+% ``$\mathbb{R}^3$ with some binary operation''; certainly if a 
+% property can be applied to just $\mathbb{R}^3$ then it must not 
+% mention the extra binary operation. However it may also be more 
+% prudent to regard this as a two-step relation
+% \[
+%   (\mathbb{R}^3,\times)
+%   \stackrel{\text{\texttt{cmo:instantiates}}}\longrightarrow
+%   (\mathbb{R}^3,\text{whatever}) 
+%   \stackrel{\text{restrict signature}}\longrightarrow 
+%   \mathbb{R}^3 
+%   \text{.}
+% \]
+% The middle thing here would however look rather odd as an 
+% \texttt{cmo:Object}.
+% 
+% The add-data-as-instantiation line of thinking also suggests a way 
+% of dealing with maps between objects. If $A$ and $B$ are objects, 
+% then this would regard a map \(f\colon A \longrightarrow B\)---or 
+% if one wishes to be more technical: a tuple $(A,f,B)$---as an 
+% instantiation of both $A$ and $B$. Certainly this provides a way of 
+% navigating from an object to examples of interesting structures that 
+% exist on that object, which is definitely something that the 
+% Catalogue should provide, but perhaps \texttt{cmo:instantiates} is 
+% a too tricky way of expressing such relations.
+% 
+% An argument why this kind of signature extension should have a 
+% different verb---say \texttt{cmo:enrichens}---can be found in 
+% considering how isomorphisms would be expressed in this vocabulary:
+% \[
+%   \begin{tikzpicture}[>=latex]
+%     \node[draw,circle] (AfB) at (-4,0) {$(A,f,B)$} ;
+%     \node[draw,circle,right] (A) at (0,2) {$A$} ;
+%     \node[draw,circle,right] (B) at (0,-2) {$B$} ;
+%     \node[draw,right] (iso) at (0,0) {isomorphism} ;
+%     \draw[->] (AfB) -- node[pos=0.6,above left]{enrichens} (A) ;
+%     \draw[->] (AfB) -- node[pos=0.6,below left]{enrichens} (B) ;
+%     \draw[->] (AfB) -- node[pos=0.5,above]{\texttt{cmo:is}} (iso);
+%   \end{tikzpicture}
+% \]
+% If an object $(A,f,B)$ is an isomorphism (of the appropriate kind) 
+% and additionally enrichens both $A$ (with $f,B$) and $B$ (with 
+% $A,f$), then it becomes an isomorphism of $A$ to $B$, right? Well, 
+% not if enrichens${}={}$\texttt{cmo:instantiates}, since in that 
+% case you have that pattern arising also in
+% \[
+%   \begin{tikzpicture}[>=latex]
+%     \node[draw,ellipse] (AfB) at (0,0) 
+%       {$($\texttt{:P2}$,\mathrm{id},{}$\texttt{:P2}$)$} ;
+%     \node[draw,circle] (A) at (0,2) {\texttt{:Pn}} ;
+%     \node[draw,circle] (B) at (0,-2) {\texttt{:Kn}} ;
+%     \node[draw,circle] (P2) at (-5,0) {\texttt{:P2}} ;
+%     \node[draw,right] (iso) at (3,0) {isomorphism} ;
+%     \draw[->] (AfB) -- node[pos=0.4,above]{instantiates} (P2) ;
+%     \draw[->] (P2) -- node[pos=0.5,above left]{instantiates} (A);
+%     \draw[->] (P2) -- node[pos=0.5,below left]{instantiates} (B);
+%     \draw[->] (AfB) -- node[pos=0.5,above]{\texttt{cmo:is}} (iso);
+%     \draw[->,dashed] (AfB) -- node[pos=0.5,right]{instantiates} (A) ;
+%     \draw[->,dashed] (AfB) -- node[pos=0.5,right]{instantiates} (B) ;
+%   \end{tikzpicture}
+% \]
+% where the two dashed arrows are by transitivity of 
+% \texttt{cmo:instantiates}; we do not want to conclude that 
+% \texttt{:Pn} and \texttt{:Kn} are isomorphic!
+% 
+% Hence it is best that \texttt{cmo:instantiates} is \emph{not} 
+% used for this kind of enrichment relation. Even with a separate 
+% \texttt{cmo:enrichens}, it is probably not safe to infer 
+% isomorphism of objects from this sort of trio, but it may well be 
+% specific enough to work as a means of \emph{searching for examples} 
+% of isomorphic objects. This specificity should be helped by \emph{not} 
+% making \texttt{cmo:enrichens} transitive.
+% 
+% \medskip
+% 
+% A similar nonobvious application, but of \texttt{cmo:implies} 
+% rather than its companion \texttt{cmo:instantiates}, is that every 
+% property that could be applied to an $X$ ought to imply $X$, e.g. 
+% `\texttt{:Eq\ref{Eq:Fibonacci-property} cmo:implies :sequence}' and 
+% `\texttt{:Eq\ref{Eq:Ore-condition} cmo:implies :graph}'. This could 
+% be a way of type-declaring properties. But maybe it too would create 
+% unwanted complications.
+% 
+% 
+% 
+% 
+% \section{Technical interlude}
+% 
+% The discussion of some later pieces of vocabulary makes more sense 
+% if we have first discussed some other matters which are not 
+% specifically about the Catalogue vocabulary.
+% 
+% 
+% \subsection{Reification and Skolemisation}
+% 
+% In the Catalogue, we need to make claims about not only nodes 
+% (entities) in the database, but also about edges (other claims). 
+% This is a well-known problem, with some established solutions, but 
+% the choice of solution could affect how other issues should be 
+% approached.
+% 
+% The RDF standard has a concept of \emph{reification}, whereby a 
+% blank node is introduced as representing a statement, and claims 
+% about the statement then have this blank node as subject or object 
+% (as appropriate). RDF reification uses four triples per reified 
+% claim: one to declare the new node a \texttt{rdf:Statement}, and 
+% one each for the three terms in the triple (\texttt{rdf:subject}, 
+% \texttt{rdf:predicate}, and \texttt{rdf:object}). There are in the 
+% literature concerns that this is overly cumbersome, in terms of the 
+% work required---in part regarding how one must rephrase searches 
+% for reifications of triples, but also with respect to overall 
+% efficiency of data storage.
+% 
+% The RDF-star specification instead introduces \emph{quoted triples} 
+% as a new kind of RDF term, on par with IRIs, literal values, and 
+% blank nodes. The Turtle syntax is that enclosing a triple between 
+% \texttt{<<} and \texttt{>>} converts it into such a term. 
+% \textbf{Regardless of technical solution chosen, this syntax is 
+% useful} for conveying the intent, and may therefore be used for 
+% expressing examples below. A disadvantage of RDF-star so far 
+% appears to be that few databases support it as such;\footnote{
+%   As of May 2023, version 1.2 of the RDF specification that 
+%   incorporates RDF-star just reached first working draft 
+%   status.
+% } it can however for most part be simulated using standard RDF 
+% reification or named graphs (in which case its use here may be 
+% regarded as syntactic sugar).
+% 
+% \emph{Named graphs} are instead arbitrary sets of edges, and since 
+% the names given to them are themselves IRIs (or, more recently, 
+% blank nodes), they may themselves be made the subject or object of 
+% a claim. It appears the origin of this feature was that of 
+% federation---to combine information from several graphs accessible 
+% at different URLs, then run a query where certain patterns are 
+% matched against edges in certain source graphs---but then it 
+% evolved into a way of keeping multiple graphs in a single database, 
+% because if fetching a remote graph to run a query involving it then 
+% one must anyway store a local copy at least temporarily. The Turtle 
+% syntax for a graph is to give its name (IRI or blank node), a left 
+% brace, the edges as triples, and finally a right brace:
+%    \begin{macrocode}
+%<*example>
+:P4 {
+   :v1 :to :v2 .
+   :v2 :to :v3 .
+   :v3 :to :v4 .
+}
+%</example>
+%    \end{macrocode}
+% Storage-wise, it appears more common to use \emph{quads} 
+% graph--subject--predicate--object in a big common table than to 
+% have separate tables of triples subject--predicate--object for each 
+% named graph. Quads make the cost of representing a quoted 
+% triple as a single edge named graph significantly less than 
+% representing it using RDF reification. Quads also make it feasible to 
+% search for graphs with a particular edge, or with an edge matching 
+% a certain pattern. The query
+%    \begin{macrocode}
+%<*query>
+SELECT ?g ?o WHERE {
+   GRAPH ?g {
+      :s :p ?o .
+   }
+}
+%</query>
+%    \end{macrocode}
+% finds a graph $g$ where there is an edge `\texttt{:s :p $o$}'. The 
+% graph $g$ may have other edges; that is not checked by this query.
+% 
+% From a model-theoretic perspective, named graphs are a bit like 
+% making (tiny) interpretations first-order values, which is 
+% potentially scary (one could imagine there being consequences 
+% similar to those of allowing higher-order logic) but also 
+% potentially very powerful.
+% 
+% \emph{Skolemisation} is in the RDF context a process of replacing 
+% all (or some) blank nodes in a graph by new IRIs not seen before: 
+% newly \emph{minted} IRIs. Skolemising an RDF reification would thus 
+% mint an IRI corresponding exactly to a specific edge. Skolemising a 
+% quoted triple is somewhat like (in a theory of formal mathematical 
+% logic) introducing a new named constant for the value of a specific 
+% term. Though that may seem like pointless overhead, it may happen 
+% to be a cost we would anyway pay: users should in reports see links 
+% with the message ``click here to review this claim'', and then 
+% the underlying URLs would already have to embed information 
+% uniquely identifying that claim.
+% Even if the database internally could make do with blank 
+% nodes for the claims when recording the review, the web interface 
+% would at some point have minted URLs that identify each specific 
+% claim. Hence the part of that URL which identifies the claim could 
+% also be used in an IRI for that claim.
+% 
+% On the other hand, proper blank nodes provide a measure of 
+% protection of claim integrity, which can be important if we do not 
+% presume all claims are made by honest actors. This is perhaps most 
+% apparent in the case of named graphs used for quoting: a named 
+% graph is not closed---instead edges can be added or deleted at any 
+% time---so if a new edge is inserted into a quoting graph then any 
+% assertion using this graph would then seem to apply also to the new 
+% edge. If the name of the graph is an IRI, then a mere \textsc{insert 
+% data} operation (which seems the natural choice for importing a 
+% dataset of multiple graphs) can place any edges it likes in that 
+% graph. Blank nodes are however local to a document; blank nodes 
+% mentioned in an \textsc{insert data} will always be fresh blank 
+% nodes. Thus there is no way for an \textsc{insert data} to 
+% reference blank nodes that already exist within the target database, 
+% and therefore it cannot modify a named graph whose name is a blank 
+% node, because it cannot speak about that graph. 
+% It is still possible for a graph store to modify the contents of 
+% blank-named graphs, but that requires using operations that first 
+% perform a search to obtain valid references to those blank nodes. 
+% 
+% 
+% 
+% \subsection{One catalogue, multiple sites}
+% 
+% Despite this document sometimes making bold claims that things have 
+% to be done a particular way, I do not expect that the first 
+% Catalogue website will provide an optimal service. Indeed, it is my 
+% expectation and hope that there will be a multitude of alternative 
+% sites experimenting with other ways of doing things (in particular 
+% regarding more fluffy aspects, such as guessing which results would 
+% be most interesting to a particular user) but all working against 
+% the same knowledge base. In early stages, this will provide a 
+% degree of resilience to the effort, since sites set up by 
+% individuals or as part of a project have a tendency to vanish if 
+% free time or funding dries up. If there are multiple sites, then 
+% there is a better chance that at least some will continue operation 
+% and that the Catalogue thus may continue to be useful.
+% 
+% In particular, it is essential that the database is not lost. 
+% Technologically it is likely quite feasible to have a single 
+% database in the cloud which individual websites query, but 
+% practically such services come at a monetary cost and therefore 
+% cannot be guarenteed long term. Thus one should instead expect each 
+% Catalogue website to maintain its own local copy of the underlying 
+% database, and disseminate additions to its peers within the 
+% Catalogue network. This has implications for how the IRIs used for 
+% Catalogue content should look.
+% 
+% Wikidata assigns identifiers to entities in a sequence of QIDs, 
+% where \texttt{Q1} is the Universe, \texttt{Q2} the Earth, 
+% \texttt{Q42} the author Douglas Adams, and so on; this requires a 
+% central authority keeping track of number allocation, which would 
+% be a single point of failure for the network. Instead it seems more 
+% wise to take a hint from distributed version control 
+% systems~(DVCSes) and use long hashes for these identifiers: when 
+% minting the IRI for an entity, then compute a hash from what you 
+% know about that entity, and make that hash the entity-specific part 
+% of the IRI. In the unlikely case that the IRI produced is already 
+% in use for something else, then add the fact that the new thing is 
+% \texttt{owl:differentFrom} the existing thing to the data being 
+% hashed (or maybe just pad with another NUL character, or something) 
+% and try again. Unlike the case with at least some DVCSes, the IRI 
+% doesn't have to be recomputable from the properties of an entity, 
+% so hash collisions do not break things. There is a theoretical risk 
+% of two different sites simultaneously (i.e., before learning about 
+% what the other site did) minting the same IRI for two different 
+% entities, and then when they do share their triples there will be a 
+% jumble, but this is no worse than would result from the human error 
+% of copying the wrong IRI for a claim, and may be solved in the same 
+% way as would a base factual error: by changing some claims (see 
+% Subsection~\ref{Ssec:Changes}), in this case to reference a 
+% different node.
+% 
+% In user-level APIs, it further seems sensible to allow for unique 
+% prefixes of hashes to be enough to identify an entity; no need to 
+% type 40 characters of hash, if already the first nine or so have 
+% narrowed it down to one entity.
+% 
+% An IRI that looks like a locator (e.g.~\texttt{http} scheme) would 
+% invite to being so resolved, which is perhaps suboptimal in a 
+% network where no particular site is canonical; remember that the 
+% separate sites would all use the same IRIs in the database. (Well, 
+% in principle they could substitute local IRIs for all remote 
+% addresses, but that would be a bit complicated and severely 
+% constrain the ways reviewing could be set up, so that seems like a 
+% Bad Idea.) Hence non-locator schemes seem the way to go, and as a 
+% matter of fact the \texttt{ni}~scheme (RFC~6920) is specifically 
+% for identifying resources using hashes. Each \emph{site} could still 
+% expose a \texttt{http} URL for ``resolving'' such IRIs by reporting 
+% what the local database has stored about the IRI in question; what 
+% we want to avoid is having one site produce links referencing data 
+% on \emph{other} sites (unless where that is explicitly the intent).
+% 
+% To identify an \texttt{cmo:Object} given a partial hash 
+% \texttt{W9tq9GsM}, one could do
+%    \begin{macrocode}
+%<*query>
+SELECT ?x WHERE {
+   ?x a cmo:Object .
+   FILTER ( strStarts(str(?x),"ni:///sha-256/W9tq9GsM") )
+}
+%</query>
+%    \end{macrocode} 
+% Only if there is more than one match will that prefix 
+% \texttt{W9tq9GsM} be ambiguous.
+% 
+% 
+% 
+% 
+% \medskip
+% 
+% Another advantage of having multiple sites is that this offers one 
+% way of managing partial splits of the community, such as the 
+% historical one between classical logic and intuitionistic logic. 
+% This is elaborated further in Subsection~\ref{Ssec:Review}, but a 
+% point is that a site should not necessarily trust the judgements 
+% made by other sites, even if they aim to share the same knowledge 
+% base. Factual trust is something one should put in particular 
+% people, not in the infrastructure.
+% 
+% 
+% \subsubsection{Knowledge not necessarily shared}
+% 
+% The issue of preferred labels touched upon in 
+% Subsection~\ref{Ssec:PreferredLabel} suggests the 
+% possibility that there could be several layers in the Catalogue 
+% database: one basic layer where contributed material would be 
+% found, and then a presentation layer which might keep track of 
+% things such as what name for something would be preferred. The 
+% point here is that whereas the basic layer is where the 
+% mathematical knowledge accumulates and is recorded for posterity, 
+% the presentation layer is something that could be wiped clean 
+% without that doing much harm. A status of preferred label might 
+% for example be set automatically based on usage frequency, if 
+% someone bothers to implement a mechanism for measuring 
+% frequencies. Or (probably less arbitrary) users might express their 
+% preference for one or the other term, and the default for those 
+% who haven't expressed an opinion would be based on opinions that 
+% have been expressed (e.g.~``people who prefer this term also tend 
+% to prefer\dots''). The opinions of individual users could be part 
+% of the basic layer (it is some sort of potentially useful 
+% research data, even if there is likely a selection bias), whereas 
+% the computed defaults (if they need to be stored) could be part of 
+% the presentation layer.
+% Preferences need however not be part of the vocabulary core.
+% 
+% \medskip
+% 
+% The idea of having several ``layers'' also emerges as a solution in 
+% Subsection~\ref{Ssec:DefaultGraph}, but the multiplicity considered 
+% there is probably orthogonal to that considered here.
+% 
+% Additional cases of information that should not be shared are 
+% considered in Subsection~\ref{Sssec:MoreOnPeers}.
+% 
+% 
+% 
+% \section{More vocabulary}
+% 
+% The matters discussed below would need to have some solution in the 
+% Catalogue, but solutions here do not seem as obvious as those in 
+% previous sections.
+% 
+% 
+% \subsection{Changes} 
+% \label{Ssec:Changes}
+% 
+% Change can be a messy thing. In the case of mathematics, it should 
+% be safe to assume the underlying reality does not change, but what is 
+% said about it can. Most of that change is that knowledge is added, 
+% and so it is not a poor first approximation that we allow triples to 
+% be added to our database, but not to be removed. This has 
+% advantages for distributed knowledge building, as each site would 
+% merely be collecting all additions, regardless of where those 
+% additions originated.
+% 
+% Still, there are some situations where we do want change:
+% \begin{itemize}
+%   \item
+%     Mistakes must be possible to correct.
+%   \item
+%     Texts must be possible to improve.
+% \end{itemize}
+% The latter does not mean the old version of a text has to be 
+% gone---the change history of a text is usually a valuable 
+% resource---but it does mean that an old version of a definition 
+% should no longer be picked when one seeks the definition of a 
+% thing.
+% 
+% Both of these situations can be encoded as a change at the level of 
+% \emph{triples}, that one triple (which says the old\slash incorrect 
+% thing) is replaced by another triple. In the case of changes in a 
+% definition text, that would look like
+% \[
+%   \begin{tikzpicture}[>=latex]
+%     \node[draw,circle,left] (old) at (0,4) {\texttt{:old}} ;
+%     \node[draw,circle,left] (new) at (0,0) {\texttt{:new}} ;
+%     \node[draw,circle,right] (obj) at (4,2) {\texttt{:obj313}} ;
+%     \draw[->] (old) --node[below left,pos=0.45] (oldedge) 
+%       {\texttt{cmo:defines}} (obj);
+%     \draw[->] (new) --node[above left,pos=0.45] (newedge) 
+%       {\texttt{cmo:defines}} (obj);
+%     \draw[->,double] (oldedge.east) 
+%       --node[right,pos=0.5]{change} (newedge.east) ;
+%     \draw[->] (old) --node[above left,pos=0.5] {\texttt{cmo:says}}
+%       +(-1,-1) node[below left,draw]{Bluh bluh};
+%     \draw[->] (new) --node[below left,pos=0.5] {\texttt{cmo:says}}
+%       +(-1,1) node[above left,draw]{Blah blah};
+%   \end{tikzpicture}
+% \]
+% (technically: it is not `bluh bluh' that is how one defines 
+% \texttt{:obj313}, it's `blah blah')
+% and in the case of change in properties it could look like
+% \[
+%   \begin{tikzpicture}[>=latex]
+%     \node[draw,circle,left] (obj) at (0,1.5) {\texttt{:obj313}} ;
+%     \node[draw,ellipse,right] (simp) at (4,3) {\texttt{:simple}} ;
+%     \node[draw,ellipse,right] (semi) at (4,0) {\texttt{:semisimple}} ;
+%     \draw[->] (obj) -- node[below right,pos=0.6] (oldedge)
+%       {\texttt{cmo:is}} (simp.west) ;
+%     \draw[->] (obj) -- node[above right,pos=0.6] (newedge)
+%       {\texttt{cmo:is}} (semi.west) ;
+%     \draw[->,double] (oldedge.west) 
+%       --node[left,pos=0.5]{change} (newedge.west) ;
+%   \end{tikzpicture}
+% \]
+% or to change the predicate
+% \[
+%   \begin{tikzpicture}[>=latex]
+%     \node[draw,circle,left] (obj) at (0,0) {\texttt{:obj313}} ;
+%     \node[draw,ellipse,right] (simp) at (4,0) {\texttt{:simple}} ;
+%     \draw[->] (obj) .. controls (1,1) and (3,1) .. 
+%       node[pos=0.5] (oldedge) {}
+%       node[above,pos=0.5] {\texttt{cmo:is}} (simp) ;
+%     \draw[->] (obj) .. controls (1,-1) and (3,-1) .. 
+%       node[pos=0.5] (newedge) {}
+%       node[below,pos=0.5] {\texttt{cmo:isnt}} (simp) ;
+%     \draw[->,double] (oldedge.south) 
+%       --node[left,pos=0.5]{change} (newedge.north) ;
+%   \end{tikzpicture}
+% \]
+% So far so good. A slight notational complication is that the 
+% English verbs expressing this kind of `change' relation tend to 
+% have the new thing as subject and the old thing as object, meaning 
+% a diagram depicting such relations would actually have the change 
+% arrow pointing \emph{backwards} in time rather than forward, but 
+% perhaps that is acceptable.
+% 
+% 
+% \subsubsection{Encoding of change}
+% 
+% There are basically two ways in which something can be represented 
+% in RDF: it can be a relation of things (a triple) or it can be a 
+% thing itself (a node). There is probably no need for our vocabulary 
+% to have it both ways, but in this text it can be useful to define 
+% both approaches so that they may be compared.
+% 
+% \begin{rdfname}{verb}{replaces}
+%   In the relational approach, change relates the old thing to the new. 
+%   The simplest verb expressing that something supersedes something 
+%   else appears to be `replace', so we should be able to express the 
+%   changes depicted above as
+%    \begin{macrocode}
+%<*example>
+<< :new cmo:defines :obj313 >> cmo:replaces
+       << :old cmo:defines :obj313 >> .
+<< :obj313 cmo:is :semisimple >> cmo:replaces 
+       << :obj313 cmo:is :simple >> .
+<< :obj313 cmo:isnt :simple >> cmo:replaces 
+       << :obj313 cmo:is :simple >> .
+%</example>
+%    \end{macrocode}
+%   The last two examples might suggest that having the old claim in 
+%   a subject position would be more practical, as in this case 
+%   two new claims replaced one old claim, but it appears the general 
+%   situation will often be many-to-many, in which case we would 
+%   anyway be better off with named graphs than individual quoted 
+%   triples.
+%   
+%   Schema-wise, there doesn't seem to be much to say.
+%    \begin{macrocode}
+%<*schema>
+cmo:replaces a rdf:Property
+           ; rdfs:label "replaces the claim(s)" .
+%</schema>
+%    \end{macrocode}
+%   Query-wise, there is more. How would one search out the 
+%   \emph{current} version of for example a definition? By disregarding 
+%   those that have been replaced.
+%    \begin{macrocode}
+%<*query>
+SELECT ?def ?text WHERE {
+   ?def cmo:defines :object .
+   FILTER NOT EXISTS {
+      ?r cmo:replaces << ?def cmo:defines :object >> .
+   }
+   ?def cmo:says ?text .
+}
+%    \end{macrocode}
+%   Or in the named graph variant
+%    \begin{macrocode}
+SELECT ?def ?text WHERE {
+   ?def cmo:defines :object .
+   FILTER NOT EXISTS {
+      GRAPH ?g { ?def cmo:defines :object }
+      ?r cmo:replaces ?g .
+   }
+   ?def cmo:says ?text .
+}
+%</query>
+%    \end{macrocode}
+%   This does not yet allow for undoing changes, so a refinement is 
+%   needed.
+% \end{rdfname}
+% 
+% Ultimately the problem with using ``has no successor'' as criterion 
+% for recognising current data is that it presumes acyclicity; in a 
+% cycle, every node has a successor, and thus none of them come 
+% across as current. If \texttt{:obj313 cmo:is :simple} is replaced 
+% by \texttt{:obj313 cmo:isnt :simple}, and then that in turn 
+% replaced by \texttt{:obj313 cmo:is :simple}, then there is a cycle 
+% of \texttt{cmo:replaces} and no way to tell which is current.
+%    \begin{macrocode}
+%<*example>
+:obj313 cmo:is :simple .
+:obj313 cmo:isnt :simple .
+<<:obj313 cmo:isnt :simple>> cmo:replaces <<:obj313 cmo:is :simple>> .
+%    \end{macrocode}
+% \refcodeline{0}\label{Line:ChangeBack1}
+% is how \texttt{cmo:replaces} is supposed to be used, but changing 
+% back would amount to adding
+% \refcodeline{1}\label{Line:ChangeBack2}
+%    \begin{macrocode}
+<<:obj313 cmo:is :simple>> cmo:replaces <<:obj313 cmo:isnt :simple>> .
+%    \end{macrocode}
+% and then we can no longer tell which way it should be.
+% Merely checking whether an addition would create a cycle would 
+% moreover not be sufficient in a distributed system, as simultaneous 
+% additions at different sites could combine into a cycle when the 
+% databases synchronise.
+% 
+% A possible way out of this could be to impose the constraint that 
+% one may not add an asserted triple in replacement if that triple is 
+% itself being removed by a separate replacement. Though this does 
+% not completely prevent the distributed creation of cycles, it makes 
+% it harder to create such cycles that are long (since you can only 
+% extend existing paths in one direction, not link two existing 
+% paths), which should help humans understand the conflicts. Applied 
+% to the example above, it would also have the direct effect that one 
+% cannot make the assertion of line~\ref{Line:ChangeBack2}, since its 
+% subject \texttt{<<:obj313 cmo:is :simple>>} was already the object 
+% of line~\ref{Line:ChangeBack1}. It would however not necessarily 
+% forbid undoing a change, because a \emph{replacement} is itself an 
+% asserted triple. If one replaces the assertion of the first 
+% replacement, then adding the second should no longer conflict:
+% \refcodeline{2}\label{Line:ChangeBack3}
+%    \begin{macrocode}
+<<:obj313 cmo:is :simple>> cmo:replaces <<
+  <<:obj313 cmo:isnt :simple>> cmo:replaces <<:obj313 cmo:is :simple>>
+>>, <<:obj313 cmo:isnt :simple>> .
+%</example>
+%    \end{macrocode}
+% By replacing the replacement quoted again on 
+% line~\ref{Line:ChangeBack3}, the original triple \texttt{:obj313 
+% cmo:is :simple} is no longer being replaced, and can thus itself be 
+% presented as a replacement.
+% 
+% This kind of nested replacements is perhaps easier to present in 
+% terms of named graphs.
+%    \begin{macrocode}
+%<*example>
+:obj313 cmo:is :simple .
+:obj313 cmo:isnt :simple .
+_:1 { :obj313 cmo:is :simple }
+_:2 { :obj313 cmo:isnt :simple }
+_:2 cmo:replaces _:1 .
+_:3 {
+   :obj313 cmo:isnt :simple .
+   _:2 cmo:replaces _:1 .
+}
+_:1 cmo:replaces _:3 .
+%</example>
+%    \end{macrocode}
+% Because a named graph can hold multiple edges, there is minimal 
+% overhead for also throwing in an earlier replacement triple as 
+% something to replace. 
+% Likewise named graphs for changes have the advantage that several 
+% related changes may be collected as one replacement. Reasons for 
+% change such as unidentifying two things which were mistakenly 
+% treated as the same thing would likely affect a number of claims, 
+% but have a single explanation. 
+% 
+% Taking replacement of replacements into 
+% account into basic queries doesn't look too bad.
+%    \begin{macrocode}
+%<*query>
+SELECT ?s ?p ?o WHERE {
+   ?s ?p ?o .
+   FILTER NOT EXISTS {
+      GRAPH ?g1 {?s ?p ?o}
+      ?h1 cmo:replaces ?g1 .
+      FILTER NOT EXISTS {
+         GRAPH ?g2 {?h1 cmo:replaces ?g1}
+         ?h2 cmo:replaces ?g2 .
+      }
+   }
+}
+%</query>
+%    \end{macrocode}
+% A potential worry here is whether two levels of \textsc{filter not 
+% exists} suffices, but it feels like it does.
+% 
+% 
+% \begin{rdfname}{type}{Change}
+%   The other approach to changes requires more words in the 
+%   vocabulary. First we need a type for the change nodes.
+%    \begin{macrocode}
+%<*schema>
+cmo:Change a rdf:type
+         ; rdfs:label "a change node" .
+%    \end{macrocode}
+% \end{rdfname}
+% 
+% \begin{rdfname}{verb}{adds}
+% \begin{rdfname}{verb}{removes}
+%   Then we need some predicates relating a change node to its 
+%   contents.
+%    \begin{macrocode}
+cmo:adds a rdf:Property
+       ; rdfs:label "adds the claim"
+       ; rdfs:domain cmo:Change .
+cmo:removes a rdf:Property
+       ; rdfs:label "removes the claim"
+       ; rdfs:domain cmo:Change .
+%</schema>
+%    \end{macrocode}
+%   With these, one might encode those depicted changes as
+%    \begin{macrocode}
+%<*example>
+[a cmo:Change]
+     cmo:adds    << :new cmo:defines :obj313 >>
+   ; cmo:removes << :old cmo:defines :obj313 >> .
+[a cmo:Change]
+     cmo:adds << :obj313 cmo:is :semisimple >>
+            , << :obj313 cmo:isnt :simple >>
+   ; cmo:removes << :obj313 cmo:is :simple >> .
+%</example>
+%    \end{macrocode}
+%   A \texttt{cmo:Change} would thus naturally be many-to-many, even 
+%   when based on quoted triples. Another advantage could be that it 
+%   provides for attaching motivations and notes on authorship---data 
+%   that are expected in a content management system. Indeed, 
+%   \texttt{cmo:Change}s are akin to both CMS commits and patches.
+%   
+%   As for filtering out removed claims, the same set-up works fine. 
+%   The query with first level change awareness is obviously
+%    \begin{macrocode}
+%<*query>
+SELECT ?def ?text WHERE {
+   ?def cmo:defines :object .
+   FILTER NOT EXISTS {
+      ?c cmo:removes << ?def cmo:defines :object >> .
+   }
+   ?def cmo:says ?text .
+}
+%</query>
+%    \end{macrocode}
+%   When allowing for undoing changes, there are two approaches: do 
+%   we remove the removal claim, or the change node as such? The 
+%   first would be
+%    \begin{macrocode}
+%<*example>
+_:newchange a cmo:Change
+   ; cmo:removes << :obj313 cmo:isnt :simple >>
+        , << _:oldchange cmo:removes << :obj313 cmo:is :simple >> >>
+   ; cmo:adds << :obj313 cmo:is :simple >> .
+%    \end{macrocode}
+%   and the second would be
+%    \begin{macrocode}
+_:newchange a cmo:Change
+   ; cmo:removes << :obj313 cmo:isnt :simple >>
+               , _:oldchange 
+   ; cmo:adds << :obj313 cmo:is :simple >> .
+%</example>
+%    \end{macrocode}
+%   The second is more compact to state, which might seem preferable. 
+%   On the other hand it would remove \emph{all} of that change, not 
+%   just the troublesome triple. That suggests it should in addition 
+%   have to repeat all the changes from the removed \verb|_:oldchange| 
+%   which are meant to remain in force after the \verb|_:newchange|; 
+%   well, that seems doable.
+%   
+%   Amending the query to take into account removal of 
+%   \texttt{cmo:remove} triples would be
+%    \begin{macrocode}
+%<*query>
+SELECT ?def ?text WHERE {
+   ?def cmo:defines :object .
+   FILTER NOT EXISTS {
+      ?c cmo:removes << ?def cmo:defines :object >> .
+      FILTER NOT EXISTS {
+         ?c2 cmo:removes <<
+            ?c cmo:removes << ?def cmo:defines :object >> .
+         >> .
+      }
+   }
+   ?def cmo:says ?text .
+}
+%    \end{macrocode}
+%   whereas amending it to take into account removal of changes would 
+%   be
+%    \begin{macrocode}
+SELECT ?def ?text WHERE {
+   ?def cmo:defines :object .
+   FILTER NOT EXISTS {
+      ?c cmo:removes << ?def cmo:defines :object >> .
+      FILTER NOT EXISTS { ?c2 cmo:removes ?c }
+   }
+   ?def cmo:says ?text .
+}
+%</query>
+%    \end{macrocode}
+%   The latter does look more attractive. (Either way, we should 
+%   settle on one approach, not allow for it to be both ways.)
+%   
+%   The sufficiency of two levels here could be accounted for by 
+%   policy: if you really mean $c_3$ to remove the removal $c_2$ of 
+%   a removal $c_1$, then just restate in $c_3$ those parts of $c_1$ 
+%   (as well as $c_2$) that should be in effect after all of this, 
+%   while keeping both $c_1$ and $c_2$ as removed.
+% \end{rdfname}\end{rdfname}
+% 
+% An observation here is however that we either way need to refer to 
+% previous change nodes when undoing changes. I \emph{think} this 
+% implies that changes cannot be blank nodes (as they were written in 
+% these examples), since that would make it impossible for new 
+% additions to make claims about them! Of course, commits in a 
+% version control system are usually externally visible entities, so 
+% it would indeed be natural to assign them IRIs even if there were 
+% no technical reasons requiring us to do so.
+% 
+% 
+% 
+% \subsubsection{The head of development problem}
+% 
+% One point that could be raised is why we let one claim replace 
+% another---why not merely mark obsolete claims as obsolete, and 
+% let that be that? Because we also want to be able to find the 
+% current version of a given claim.
+% The main reason for finding newer versions of a \emph{specific} 
+% claim arises when combining change with peer review: $A$ is the 
+% newest version that has been reviewed, so that is what shows up in 
+% default reports, but these should also notice when a newer unreviewed 
+% version $B$ exists and provide for users to then begin reviewing 
+% that newer version. 
+% 
+% A separate reason does however arise already in the 
+% context of submitting changes: suppose you mean to contribute the 
+% new version $B$ of claim $A$, but someone else has already 
+% submitted a new version~$C$. Parallel versions can make 
+% sense---for example two contributors might want to develop a 
+% definition in two different directions, targetting different 
+% audiences---but more often it might be better to instead declare 
+% your new version $B$ as replacing version $C$ instead of $A$, 
+% perhaps after first integrating the difference $C-A$ to really 
+% make version \(B' = A + (C -\nobreak A) + (B -\nobreak A)\). In 
+% this case you want to search forward from $A$, because if someone 
+% else forked earlier in the development history, then only the 
+% descendants of $A$ are obvious candidates for being replaced by 
+% $B'$.
+% 
+% An advantage of storing development history in a graph database 
+% is that the single verb \texttt{cmo:replaces} is sufficient for 
+% expressing both forks and merges. 
+%    \begin{macrocode}
+%<*example>
+<< :B cmo:defines :obj313 >> cmo:replaces
+       << :A cmo:defines :obj313 >> .
+<< :C cmo:defines :obj313 >> cmo:replaces
+       << :A cmo:defines :obj313 >> .
+<< :Bprime cmo:defines :obj313 >> cmo:replaces
+       << :B cmo:defines :obj313 >>
+     , << :C cmo:defines :obj313 >> .
+%</example>
+%    \end{macrocode}
+% 
+% A complication compared to versioning in software development is 
+% that versions there generally cover the whole thing: each commit 
+% represents a complete state of the product. Claims in the Catalogue 
+% are mostly independent of each other, so when searching for other 
+% versions of a claim one needs to figure out what variations one is 
+% prepared to consider; if looking for newer versions of a 
+% definition, then we focus on triples with verb 
+% \texttt{cmo:defines} and object that which is of interest, but 
+% allow the subject to vary. This is hopefully natural in concrete 
+% situations, but can be confusing when considering ``change'' in the 
+% abstract.
+% 
+% 
+% How does one find the head of development, though? The obvious 
+% approach is to follow the chain of replacements until we encounter 
+% one which has not itself been replaced.
+%    \begin{macrocode}
+%<*query>
+SELECT ?newdef WHERE {
+   ?newdef cmo:defines :object .
+   << ?newdef cmo:defines :object >> cmo:replaces*
+     << :olddef cmo:defines :object >> .
+   FILTER NOT EXISTS {
+      ?r cmo:replaces << ?newdef cmo:defines :object >> .
+   }
+}
+%    \end{macrocode}
+% A named graph counterpart could be
+% \refcodeline{1}\label{Line:TipUsingGraphs}
+%    \begin{macrocode}
+SELECT ?newdef WHERE {
+   ?newdef cmo:defines :object .
+   GRAPH ?g_new { ?newdef cmo:defines :object }
+   GRAPH ?g_old { :olddef cmo:defines :object }
+   ?g_new cmo:replaces+ ?g_old .
+   FILTER NOT EXISTS { ?r cmo:replaces ?g_new }
+}
+%    \end{macrocode}
+% (this wouldn't pick up \texttt{:olddef} itself---switching to 
+% \texttt{*} for the path should make that constraint trivial, but 
+% there would still be a constraint that `\texttt{:olddef cmo:defines 
+% :object}' is in some named graph---however testing whether 
+% \texttt{:olddef} is in fact current should be easy as a separate 
+% case) and a change node counterpart could be
+%    \begin{macrocode}
+SELECT ?newdef WHERE {
+   ?newdef cmo:defines :object .
+   FILTER NOT EXISTS {
+      ?change cmo:removes << ?newdef cmo:defines :object >> .
+   }
+   << ?newdef cmo:defines :object >> (cmo:adds/^cmo:removes)*
+     << :olddef cmo:defines :object >> .
+}
+%</query>
+%    \end{macrocode}
+% \refcodeline{-3}\label{Line:adds/removes-star}
+% A catch for all three formulations is that nothing here says all 
+% the nodes on the \texttt{cmo:replaces} or adds--removes path have to 
+% have triples `something\texttt{ cmo:defines :object}'; the sequence 
+% of claims could pass through something completely different, which is 
+% perhaps not what one wants.
+% 
+% A converse and perhaps more severe complication for the named graph 
+% version of this search is that it could be confused simply 
+% by using different graphs for the replacement that introduces a 
+% claim and the replacement which obsoletes it. So maybe SPARQL 
+% isn't by itself the right tool for finding the current version. 
+% A possible way of overcoming the second catch could be if there was 
+% a verb \texttt{cmo:overlaps} for flagging graph 
+% overlaps---something like
+% \refcodeline{2}\label{Line:ConstructOverlaps}
+%    \begin{macrocode}
+%<*rules>
+CONSTRUCT {?G cmo:overlaps ?H} WHERE {
+   GRAPH ?G {?x ?y ?z}
+   GRAPH ?H {?x ?y ?z}
+}
+%</rules>
+%    \end{macrocode}
+% since then the line~\ref{Line:TipUsingGraphs} query could be 
+% refined to
+%    \begin{macrocode}
+%<*query>
+SELECT ?newdef WHERE {
+   ?newdef cmo:defines :object .
+   GRAPH ?g_new { ?newdef cmo:defines :object }
+   GRAPH ?g_old { :olddef cmo:defines :object }
+   ?g_new cmo:replaces/(cmo:overlaps/cmo:replaces)* ?g_old .
+   FILTER NOT EXISTS { ?r cmo:replaces ?g_new }
+}
+%</query>
+%    \end{macrocode}
+% In the case that one for example is only interested in tracking 
+% \texttt{cmo:defines} changes then the \texttt{?y} of the 
+% line~\ref{Line:ConstructOverlaps} \textsc{construct} could 
+% furthermore be specialised to that verb. On the other hand, the 
+% search defining that \textsc{construct} looks potentially 
+% expensive.\footnote{
+%   It appears this runs straight into the matter of recursive 
+%   queries in SPARQL, which is apparently a known limitation and 
+%   possibly an area under development.
+% }
+% 
+% Not addressed by any of of these queries is the matter of how to 
+% ignore replacements\slash changes that have been removed. 
+% \textbf{This is a problem.}
+% 
+% \begin{rdfname}{verb}{amends}
+%   One possibility that exists for the \texttt{cmo:Change} approach 
+%   is that of linking changes that modify each other. A neat name 
+%   for that verb would be `amends'.
+%    \begin{macrocode}
+%<*schema>
+cmo:amends a rdf:Property
+         ; rdfs:label "affects the changes made by"
+         ; rdfs:domain cmo:Change
+         ; rdfs:range cmo:Change .
+%</schema>
+%    \end{macrocode}
+%   If going by that rather than add--remove combinations, the query 
+%   for strict descendants that are heads of development can be 
+%   formulated as
+%    \begin{macrocode}
+%<*query>
+SELECT ?newdef WHERE {
+   ?newdef cmo:defines :object .
+   ?newchange cmo:adds << ?newdef cmo:defines :object >> .
+   FILTER NOT EXISTS { ?other cmo:removes ?newchange }
+   ?newchange cmo:amends* ?oldchange .
+   ?oldchange cmo:removes << :olddef cmo:defines :object >> .
+   FILTER NOT EXISTS { ?other cmo:removes ?oldchange }
+}
+%</query>
+%    \end{macrocode}
+%   Unlike the previous queries, this will not have false positives 
+%   for changes that have been removed. It may however still make 
+%   detours via changes that have noting to do with defining 
+%   \texttt{:object}.
+%   
+%   Would there be any difference in using that \verb|cmo:amends*| 
+%   path instead of a \verb|(cmo:adds/^cmo:removes)*| path, though? 
+%   (We could split off the first and last steps of the path on 
+%   line~\ref{Line:adds/removes-star}, to make \texttt{?newchange} 
+%   and \texttt{?oldchange} explicit there as well, and thus 
+%   available for further constraints.)
+%   Perhaps one: for an add--remove path, there is no sense of what 
+%   came first (especially in a cycle where one change undoes 
+%   another), but \texttt{cmo:amends} can be set up so that it always 
+%   points from new to old. 
+%   Assuming that \texttt{:patch} is a graph of new claims, we would 
+%   like something like
+%    \begin{macrocode}
+%<*rules>
+CONSTRUCT {?c1 cmo:amends ?c2} WHERE {
+   ?c2 cmo:adds << ?s ?p ?o >> .
+   GRAPH :patch { ?c1 cmo:removes << ?s ?p ?o >> }
+}
+%    \end{macrocode}
+%   or with named graphs
+%    \begin{macrocode}
+CONSTRUCT {?c1 cmo:amends ?c2} WHERE {
+   GRAPH :patch { ?c1 cmo:removes ?g1 }
+   GRAPH ?g1 { ?s ?p ?o }
+   GRAPH ?g2 { ?s ?p ?o }
+   ?c2 cmo:adds ?g2 .
+}
+%</rules>
+%    \end{macrocode}
+%   This is similar to the hypothetical \texttt{cmo:overlaps}, but 
+%   perhaps more focused.
+%   
+%   The converse situation---new change adds what existing change 
+%   removes---is what the rules for resolving cycles say must not be 
+%   allowed. A search detecting violations of this would be
+%    \begin{macrocode}
+%<*query>
+SELECT ?change ?conflicting WHERE {
+   GRAPH :patch { ?change cmo:adds << ?s ?p ?o >> }
+   ?conflicting cmo:removes << ?s ?p ?o >> .
+   FILTER NOT EXISTS {
+      ?c cmo:removes ?conflicting .
+      UNION
+      GRAPH :patch { ?c cmo:removes ?conflicting }
+   }
+}
+%</query>
+%    \end{macrocode}
+%   Unlike SQL databases, SPARQL databases do not seem to have a 
+%   concept of constraints (possibly there are such features at 
+%   the inference engine level), so updates of the database would 
+%   have to be written to explicitly check these constraints.
+% \end{rdfname}
+% 
+% There would probably be some interaction between removing changes 
+% and amending them. If we want \texttt{cmo:amends} to be strictly 
+% causal---which seems advisable---then upon removing a change 
+% (because we want to undo one of its removals) we cannot necessarily 
+% have the new change redo all its \texttt{cmo:adds}, because some of 
+% those might have been undone by other changes. Redoing all 
+% additions that are still in force should however be fine; any 
+% change affecting an addition by the change we want to remove should 
+% have a \texttt{cmo:amends} relation to the change we remove.
+% 
+% \medskip
+% 
+% Summarising all of that, it is starting to look like a solution 
+% with \texttt{cmo:Change}s, named graphs for quoting, and explicit 
+% \texttt{cmo:amends} is the most conservatively feasible.
+% 
+% 
+% 
+% 
+% \subsection{Peer review}
+% \label{Ssec:Review}
+% 
+% Because material may have its primary publication in the Catalogue, 
+% we cannot know if a thing said or claimed is in fact correct 
+% (although, knowing mathematicians, the chances are still pretty 
+% good). Reasonble certainty may however be attained already if 
+% someone else reads through what is claimed and confirms it checks 
+% out. This would mean we have another type of entity in the 
+% database: people.
+% 
+% \begin{rdfname}{type}{Peer}
+% \begin{rdfname}{verb}{by}
+%   The obvious term for a person interacting with a website is 
+%   perhaps `user', but since we need entities for people primarily 
+%   with respect to peer review, maybe the name should highlight that; 
+%   the connotations of `peer' seem appropriate in context.
+%    \begin{macrocode}
+%<*schema>
+cmo:Peer a rdf:type
+       ; rdfs:label "person contributing information to the catalogue" .
+%    \end{macrocode}
+%   As worded, that practically calls out for a verb expressing who 
+%   contributed something. The simplest word for that relation is 
+%   probably `by', which suggests:
+%    \begin{macrocode}
+cmo:by a rdf:Property
+     ; rdfs:label "was submitted by" 
+     ; rdfs:range cmo:Peer .
+%</schema>
+%    \end{macrocode}
+%   That \textsc{may} however be oversimplifying things. It's one 
+%   thing to have provided a write-up of something, but quite another 
+%   to claim discovery of it! If having a verb \texttt{cmo:by}, it 
+%   should be made clear which sense is meant, which may require 
+%   multiple verbs. (On the other hand, the traditional literature is 
+%   not always clear on the matter; numerous discoveries are named 
+%   for, and thus attributed to, someone else than the actual 
+%   inventor.)
+% \end{rdfname}\end{rdfname}
+% 
+% Contributing content is however not the same as peer review. Reviews 
+% \emph{judge} claims that are made, to distinguish true from false. 
+% 
+% What does it mean that a peer has contributed a review? Is it 
+% just a triple
+%    \begin{macrocode}
+%<*example>
+:Peer1728 cmo:reviewed << :Petersen cmo:is :cubic >> .
+%</example>
+%    \end{macrocode}
+% ? When you think about it, it obviously cannot be only that, 
+% because then there are bound to be some dishonest academians who 
+% hatch the scheme of boosting their own merits by falsely 
+% asserting that various famous people have reviewed their incredibly 
+% convoluted contributions (of for example constructions for doubling 
+% the cube) and found them correct---at worst it would take setting 
+% up your own bad node of the Catalogue network to be able to inject 
+% whatever claims you want. A review proper would have to be 
+% something that cannot reasonably be faked, and so it would have to 
+% be cryptographically signed.
+% 
+% \begin{rdfname}{verb}{reviewed}
+%   Still, a \texttt{cmo:reviewed} verb has some use: it would be a 
+%   way for a peer to keep track of his or her reviews, and it would 
+%   also be useful in estimating a peer's area of competence. 
+%   Sometimes it might happen that there is a conflict which needs to 
+%   be resolved, and then it might be necessary to explicitly ask 
+%   appropriate specialists to do that resolving.
+%    \begin{macrocode}
+%<*schema>
+cmo:reviewed a rdf:Property
+           ; rdfs:label "has reviewed"
+           ; rdfs:domain cmo:Peer .
+%    \end{macrocode}
+%   
+%   A consequence of this is that reviewers in the Catalogue are not 
+%   secret (although they could be anonymous---see 
+%   Subsection~\ref{Sssec:MoreOnPeers}). 
+%   This is probably necessary, given that reviews are primarily 
+%   self-reported: there is no impartial editor who selects a fair 
+%   reviewer, so reviews cannot be afforded the presumption of 
+%   presenting a representable opinion, they merely report the opinion 
+%   of the reviewer. It is probably acceptable to give peers the 
+%   benefit of the doubt, but where there are conflicting opinions 
+%   reputation of the reviewers ought to decide whom a Catalogue site 
+%   should trust. Past behaviour is likely important for compiling that 
+%   reputation, and different algorithms for estimating reputation is 
+%   one of those things different sites might be created to experiment 
+%   with.
+% \end{rdfname}
+% 
+% 
+% \subsubsection{Review composition}
+% 
+% A review as such will have to combine several pieces of data:
+% \begin{enumerate}
+%   \item
+%     Whose rewiew is this?
+%   \item
+%     What was the conclusion?
+%   \item
+%     What is being reviewed? (We don't want to allow malicious 
+%     agents to get away with attaching a valid review to an invalid 
+%     claim.)
+%   \item
+%     Are there any conflicts of interest?
+%   \item
+%     Additional information (if one feels something needs to be 
+%     improved, then there should be a field for saying how).
+%   \item
+%     Actual signature (in the usual signature schemes, this would be 
+%     an encrypted hash of all of the above).
+% \end{enumerate}
+% There seems to be basically two ways of forming such information 
+% aggregates: one is to encode all these pieces of information as 
+% a set of triples (essentially a named graph) representing the review, 
+% the other is to write them down in a document and make the literal 
+% value of that document the review. Using triples would have the 
+% advantage of making the information easily searchable, and could 
+% potentially enable more efficient data storage (given the 
+% constraint that the data is kept in a graph database), but there is 
+% the problem of how to produce signatures in that case; work in this 
+% area is ongoing (there is a W3C working group), but that work does 
+% not seem to be mature. This indicates the document as a literal value 
+% might be more practical;\footnote{
+%   A problem with data encoded as a set of triples is that these are 
+%   intrinsically unordered; hash algorithms taking an octet-sequence 
+%   as input would need a preprocessing step that produces a 
+%   canonical encoding of those triples. With a document, the 
+%   octet-sequence signed is stored explicitly, so it doesn't matter 
+%   if its encoding is not canonical.
+% } for that, there are very mature standards.
+% 
+% Going the literal value route places review contents somewhat 
+% outside the RDF area of competence; getting individual pieces out 
+% of it (was this a favourable review?) is not something one gladly 
+% embarks on in the middle of a search for examples. 
+% However, it is something that is reasonable 
+% to do when first accepting the review into the database. Therefore 
+% that would be when we bother to verify signatures;\footnote{
+%   As a middle position, one could extract all data from the review 
+%   upon accepting it, and encode it as triples for easy searching. 
+%   The only catch is that those triples should not be kept in a 
+%   graph that is sent on to with other sites; those sites should 
+%   instead generate those triples themselves from the review. And 
+%   there is nothing which prevents the bulk of the review document 
+%   from being a serialisation of some set of triples, if that seems 
+%   convenient.
+% } the rest of the 
+% time the review is more a record that we keep in case this will 
+% ever need to be reexamined, or possibly a source of additional 
+% details to sometimes include in a report.
+% 
+% 
+% \begin{rdfname}{verb}{review:correct}
+% \begin{rdfname}{verb}{review:wrong}
+% \begin{rdfname}{verb}{review:ignore}
+%   If we don't look into a review to determine if it is favourable, 
+%   then where do we look? One way can be to have multiple 
+%   \texttt{cmo:review:}\meta{status} verbs and assign that which 
+%   reflects the practical status of the review, regardless of which 
+%   predicate was used upon submitting the triple.
+%    \begin{macrocode}
+cmo:review:correct a rdf:Property
+                 ; rdfs:label "reviews as correct" .
+cmo:review:wrong a rdf:Property
+               ; rdfs:label "reviews as wrong" .
+cmo:review:ignore a rdf:Property
+                ; rdfs:label "ignore this purported review" .
+%</schema>
+%    \end{macrocode}
+%   Contrasting \texttt{correct} against \texttt{wrong} (rather than 
+%   correct--incorrect or right--wrong) is a stylistic choice; the 
+%   bluntness of \texttt{wrong} seems appropriate for the situation, 
+%   whereas the similarly blunt interpretation of `right' feels less 
+%   so, and the alternative interpretation of `right' as conversational 
+%   agreement (``I hear what you say, continue'') hardly constitutes 
+%   taking a position. Saying \texttt{correct} is taking a position. 
+%   
+%   When creating such verbs, it is however easy to get carried away 
+%   with how much detail is reproduced. The guiding principle should 
+%   be whether we can foresee database queries that would want to 
+%   distinguish between named statuses; if not, then a separate verb 
+%   is probably not necessary. We definitely want to distinguish 
+%   between a claim being reviewed as \texttt{correct} versus not 
+%   having been reviewed, so that verb is needed. Reviewing something 
+%   as \texttt{wrong} is different from both of them, because a claim 
+%   rejected should not even show up on normal searches. A review 
+%   \texttt{ignore}d should on the other hand be like no review at 
+%   all. Why keep such reviews? One reason could be to preserve a 
+%   record of that reviewer's claims, another reason could be to 
+%   remember that yes, this review has been received (it's just being 
+%   ignored). Whether that is necessary probably depends on policies 
+%   and protocol for exchanging informtion between Catalogue sites.
+% \end{rdfname}\end{rdfname}\end{rdfname}
+% 
+% What would a query look like that takes these reviews into account? 
+% We should skip things that are \texttt{wrong}, allow claims that 
+% have not been reviewed or has an \texttt{ignore}d review, and give 
+% preference to claims that are \texttt{correct}. For just looking 
+% for objects with property $A$ that could be
+%    \begin{macrocode}
+%<*query>
+SELECT ?object ?review
+WHERE {
+   ?object cmo:is :A .
+   OPTIONAL {
+      << ?object cmo:is :A >> cmo:review:correct ?review .
+   }
+   FILTER NOT EXISTS {
+      << ?object cmo:is :A >> cmo:review:wrong ?review2 .
+   }
+}
+ORDER BY DESC( BOUND(?review) )
+%    \end{macrocode}
+% if subjects are quoted triples. (The idea here is that 
+% \textsc{optional} constraints bind variables if they match, so the 
+% result would have all reviewed matches before the unreviewed ones.) 
+% If instead subjects are named graphs then the counterpart is
+%    \begin{macrocode}
+SELECT ?object ?review
+WHERE {
+   ?object cmo:is :A .
+   OPTIONAL {
+      GRAPH ?g { ?object cmo:is :A .}
+      ?g cmo:review:correct ?review .
+   }
+   FILTER NOT EXISTS {
+      GRAPH ?g2 { ?object cmo:is :A .}
+      ?g2 cmo:review:wrong ?review2 .
+   }
+}
+ORDER BY DESC( BOUND(?review) )
+%    \end{macrocode}
+% Those should work, but do not look particularly elegant. For one, 
+% it means a single \texttt{cmo:review:wrong} takes precedence over 
+% any number of \texttt{cmo:review:correct}, which is not obviously 
+% the right policy; on the other hand, a majority vote is not 
+% obviously the right thing either---conflicts should be openly 
+% admitted rather than hidden. How would one extend this to consider 
+% additional statuses, if necessary? More immediately, how would 
+% this look with additional properties? Since each considered 
+% property of an object might have been separately reviewed (or not 
+% reviewed), it seems each needs its own optional pattern. Well, at 
+% least ordering by number of sought properties that have been 
+% reviewed as correct seems feasible:
+%    \begin{macrocode}
+SELECT ?object ?r1 ?r2 ?r3
+WHERE {
+   ?object cmo:is :A .
+   OPTIONAL {
+      << ?object cmo:is :A >> cmo:review:correct ?r1 .
+   }
+   ?object cmo:is :B .
+   OPTIONAL {
+      << ?object cmo:is :B >> cmo:review:correct ?r2 .
+   }
+   ?object cmo:isnt :C .
+   OPTIONAL {
+      << ?object cmo:isnt :C >> cmo:review:correct ?r3 .
+   }
+}
+ORDER BY DESC( BOUND(?r1) + BOUND(?r2) + BOUND(?r3) )
+%</query>
+%    \end{macrocode}
+% 
+% Two more statuses that could be introduced are ``weak'' variants of 
+% \texttt{correct} and \texttt{wrong}, for cases where the site would 
+% acknowledge that there is a review, but still likes to elicit 
+% further confirmation, for example because there is a conflict of 
+% interest. This does however tie into matters of policy which go a 
+% bit beyond a first ontology draft.
+% 
+% A review judgment that would not need a new status is to say 
+% ``\emph{this is not math}'', for example if someone has uploaded 
+% one's chemtrail conspiracy theory, or (more benignly) some anecdote 
+% about a famous mathematician: it's not math, so normal searches in 
+% the catalogue should not pick that up. Since this is also the 
+% effect of \texttt{cmo:review:wrong}, no separate verb is needed.
+% 
+% \begin{rdfname}{verb}{review:contextual}
+%   Spontaneously one could expect that a (closed) mathematical claim 
+%   is always true or false, allowing only for the reservation that 
+%   some things remain undecided---this is in a sense what the Law of 
+%   the Excluded Middle tells us---but if one looks at the literature in 
+%   its totality, things are not that simple: there are plenty of 
+%   things which are true \emph{in context}. For example, 
+%   it might be natural to have the claims
+%    \begin{macrocode}
+%<*example>
+:free-module a cmo:Property
+           ; cmo:called "free module (over a ring)" .
+:vector-space a cmo:Property
+            ; cmo:called "vector space"
+            ; cmo:implies :free-module .
+%</example>
+%    \end{macrocode}
+%   because vector spaces are indeed important examples of free 
+%   modules. (To recap: a module is a generalisation a vector space, 
+%   where one allows the scalar coefficients to come from a general 
+%   ring, rather than requiring that they live in a field. This opens up 
+%   for all sorts of complications, for example a module doesn't have 
+%   to have a basis, but modules that do have a basis are said to be 
+%   free.) We want the catalogue search engine to find vector spaces 
+%   as examples of free modules, even in the likely case that nobody 
+%   has for each specific vector space explicitly entered the claim 
+%   that it is a free module, so `\texttt{:vector-space cmo:implies 
+%   :free-module}' is knowledge that it would be appropriate to have. 
+%   The only catch, 
+%   from a strict logical perspective, is that the familiar theorem 
+%   that all vector spaces have a basis happens to be equivalent to 
+%   the Axiom of Choice; while not controversial in the mainstream, 
+%   it is considered proper to flag it when one's result depends on 
+%   this axiom.
+%   
+%   Hence, we need a separate verb for this.
+%    \begin{macrocode}
+%<*schema>
+cmo:review:contextual a rfd:Property
+                    ; rdfs:label "reviews as depending on context" .
+%</schema>
+%<*example>
+<< :vector-space cmo:implies :free-module >> cmo:review:contextual
+  "((some long literal constituting a review))" .
+%</example>
+%    \end{macrocode}
+%   Having a \meta{status} as \texttt{contextual} could result in 
+%   reports containing notes that some inference is flagged as  
+%   contextual, but that merely being so flagged does not mean the 
+%   conclusion critically depends on that context. For example, in 
+%   most vector spaces one encounters in the literature, one can find 
+%   a basis without having to resort to the axiom of choice.
+% \end{rdfname}
+% 
+% A further issue raised by this is: \emph{how to deal with inferred 
+% claims?} Is it possible to query how a claim was inferred, so that 
+% one may check the reviews of the steps in that deduction? If 
+% not---which seems to be the baseline state of the matter---it might 
+% not be possible to construct a query that determines the review 
+% status of inferred claims! This suggests a different approach may 
+% be necessary.
+% 
+% 
+% \subsubsection{Default graph contents}
+% \label{Ssec:DefaultGraph}
+% 
+% As so far presented, the default graph in the database contains all 
+% triples ever asserted---old and new, some the subject of 
+% reviews---which means every query must filter this for what is 
+% current, but also take into account the level of confidence reviews 
+% attach to each claim. That appears quite a mouthful.
+% 
+% An alternative set-up would be to maintain separate graphs of only 
+% the current claims, at each level of confidence. Normal reports 
+% from the Catalogue would then be based on searches in these graphs, 
+% whereas the big collection of everything ever claimed is found in 
+% another graph (possibly the default graph). This big collection is 
+% what different sites share, and the graphs of current claims can be 
+% rebuilt from the big collection, but it is perhaps not practical 
+% to do that anew for each query. Rather, it would be when receiving 
+% a change claim or a review claim that edges would be removed from 
+% or added to those current graphs.
+% 
+% The feasibility of such a scheme is likely tied to how many 
+% variants of the ``current graph'' it would need to maintain. One 
+% for claims \texttt{correct} and another for claims not 
+% \texttt{wrong} (i.e., at not reviewed or higher level of 
+% confidence) should be no problem, but keeping a separate graph for 
+% every separate \texttt{contextual} variant is likely not. Some 
+% expert advice on the matter should be helpful.
+% 
+% 
+% 
+% \subsubsection{Conflicts and clarifications}
+% 
+% \begin{rdfname}{verb}{review:clarify}
+%   The conclusions of a review need not only lie on 
+%   the correct--incorrect axis. There is definitely also a need for 
+%   being able to say ``I don't see this (and I really should be able 
+%   to)''; something needs to be \emph{clarified}.
+%    \begin{macrocode}
+%<*schema>
+cmo:review:clarify a rdf:Property
+                 ; rdfs:label "needs to be clarified" .
+%</schema>
+%    \end{macrocode}
+%   In basic searches for objects, claims reviewed as 
+%   \texttt{clarify} should be sorted as not reviewed at all, but 
+%   their fine print would be different; rather than a link for 
+%   straight off reviewing, it would be said that the validity of 
+%   this claim is unclear, and a link should rather take one to the 
+%   review or a discussion of the same.
+% \end{rdfname}
+% 
+% 
+% Clarifying a \texttt{cmo:defines} would most likely involve 
+% changing the wording of the \texttt{cmo:Material} in question, 
+% which means it becomes a different resource; such clarifications 
+% would thus end up as changes. Clarifying an \texttt{cmo:is} or 
+% \texttt{cmo:isnt}, on the other hand, would not change what claim it 
+% is, so here the reason needs be attached using some new mechanism.
+% 
+% \begin{rdfname}{verb}{because}
+%   At the RDF level, clarifying a claim would amount to attaching a 
+%   reason to it. Possible verbs here include \texttt{proves}, which 
+%   presumably would take some \texttt{cmo:Material} as subject and the 
+%   claim as object, but for some reason I find \texttt{because} more 
+%   appealing; this would have the roles exchanged.
+%    \begin{macrocode}
+%<*example>
+<< :Petersen cmo:isnt :Hamiltonian >> cmo:because :Proof42 .
+:Proof42 a cmo:Material
+       ; cmo:mimetype "application/x-latex"
+       ; cmo:says '''
+  Any Hamiltonian cubic graph may be $3$-edge-coloured by alternating 
+  two colours along the Hamiltonian cycle (it is even length because 
+  of the Handshaking Lemma) and using the third colour for the edges 
+  not in the cycle. But as a snark, the Petersen graph is not 
+  $3$-edge-colourable, and hence cannot be Hamiltonian.
+  
+  Or you can just do a case-by-case analysis, to verify no cycle can 
+  pick up all vertices. There are plenty of symmetries which may be 
+  used to reduce the number of cases, although exactly which 
+  symmetries are apparent depends on which construction of the 
+  Petersen graph you use.
+'''@en-uk .
+%</example>
+%    \end{macrocode}
+%   Having the reason in object position allows for making that a 
+%   literal value, which might well be useful. Having the reason in 
+%   subject position would on the other hand simplify having one 
+%   reason prove several claims; this might well be realistic, as one 
+%   argument often proves several related claims, but could also be 
+%   considered as inviting poorer style (making it less clear what the 
+%   reason really is). However if using named graphs rather than quoted 
+%   triples then it is equally quick to stick several triples into the 
+%   subject of a \texttt{cmo:because}, so putting the quoted material 
+%   in the subject position does not enforce that aspect of style.
+%   
+%   Anyhow, if entertaining a \texttt{cmo:because} verb, then it should 
+%   be in the schema.
+%    \begin{macrocode}
+%<*schema>
+cmo:because a rdf:Property
+          ; rdfs:label "is correct because"
+          ; rdfs:range cmo:Material .
+%</schema>
+%    \end{macrocode}
+%   (Or should that \texttt{rdfs:range} specification be dropped? I 
+%   \emph{think} it is not compatible with the object being a 
+%   literal.)
+%   
+%   Another use for \texttt{cmo:review:clarify} could perhaps be to 
+%   request clarifications of reviews themselves.
+% \end{rdfname}
+% 
+% A request for clarification is one manner in which different 
+% contributors to the Catalogue may have a disagreement (even if that 
+% often would be quite benign). Factual disputes, though rare, are 
+% however known even in the printed literature and we should thus be 
+% prepared to handle them when they arise.
+% 
+% When there is a conflict, it is important that both sides can state 
+% their arguments, in a forum where the collection of these arguments 
+% can be seen. A natural form for such a forum could be an issue 
+% tracker, which does not need to be separate from the main database; 
+% this is another point where useful vocabulary probably already 
+% exists elsewhere.
+% 
+% 
+% 
+% 
+% \subsubsection{More on peers}
+% \label{Sssec:MoreOnPeers}
+% 
+% The \texttt{Peer} is one type of entity that brings us head-on with 
+% the need to distinguish between public information (which is shared 
+% between Catalogue sites) and private information (which is not). 
+% Strictly speaking, the only information about a \texttt{Peer} which 
+% \emph{needs} to be public is its public signing key, since that is 
+% what sites would use to verify the authenticity of reviews. 
+% Conversely, the corresponding private key \emph{must not} be 
+% public, because that would defeat the purpose of signing. Most 
+% users of a site would likely find it convenient if the site kept 
+% this private key---as long as it's only used for signing things 
+% within the Catalogue, it's likely not a big problem if a hacker 
+% were to steal it---but for the ideologically paranoid it would 
+% probably be a nice touch to have the option of locally carrying out 
+% that step of signing which requires having the private key, instead 
+% of trusting the site to perform it.
+% 
+% It will likely be natural that peers publish select information 
+% from their vitae: name, degrees, employment, ORCID, etc.; all of 
+% these require verbs, which should already exist within other 
+% vocabularies. Such information is likely to figure into traditional 
+% algorithms for estimating the trustworthyness of a 
+% \texttt{cmo:Peer} (e.g.~a Ph.D.~probably has a better grasp on the 
+% subject than someone without education), but strictly speaking none 
+% of this information is necessary. Hence a peer could stay anonymous 
+% simply by not revealing any personal information! Even the data 
+% point of at which site this \texttt{cmo:Peer} has an account is not 
+% technically necessary, because any data (such as a clarification 
+% request) that the peer should get informed of will be dessiminated 
+% to all Catalogue sites, thus including that which may know how to 
+% make a notification. For a peer to be able to receive messages in 
+% private from another peer, it would however be necessary to 
+% identify a target site. (Message contents could be kept secret by 
+% encrypting them even if the message as such is published for all, 
+% but the community utility of forever storing a bunch of messages 
+% that are supposed to be unreadable by most is dubious, so we 
+% probably don't want that kind of feature.)
+% 
+% To what extent sites would want 
+% to trust fully anonymous peers is an interesting question, but 
+% perhaps slightly misplaced. It is one thing to claim a peer has a 
+% particular degree, and another thing to have verified it. Thus we 
+% end up with peers also reviewing each other's personal details, to 
+% confirm that they check out. In particular, there should be a way 
+% for two \texttt{cmo:Peer}s (for example at different sites) to 
+% state that they in fact are the same person. On the other hand, no 
+% site should accept a new public key for an existing 
+% \texttt{cmo:Peer} that is not signed using a previously known key 
+% of that peer; to do otherwise would allow malicious agents to 
+% hijack the identity of an unrelated peer.
+% 
+% In the end, the best way of judging the trustworthiness of a 
+% peer might be a reputation based on past behaviour. If the review 
+% reports by an anonymous peer are later confirmed by trustworthy 
+% peers, especially if those reports include both positive and 
+% negative reviews, then chanses are probably good that future 
+% reports will be good as well.
+% If reviewer manpower becomes plenty enough, one could consider 
+% sites actively seeking second opinions on claims that have already 
+% been reviewed, specifically to obtain data on the reliability 
+% of peers; this is on the one hand similar to some forms of captcha, 
+% where the system does not start out with the right answers, but 
+% trusts the majority opinion to be right. On the other hand, 
+% reviewing a mathematical claim is often a bigger job than finding 
+% all the traffic lights in a photo, so that analogy might be flawed.
+% 
+% \medskip
+% 
+% In view of the Section~\ref{Sec:Intro} discussion about proper 
+% attribution of contribution to mathematics sometimes being a factor 
+% deterring dissemination of these contributions, there is likely a 
+% need for at least one verb giving such attribution---a function 
+% quite separate from that of stating who wrote something up, even 
+% though in traditional publication they are often assumed 
+% correlated. A consequence of such a verb would be a need for 
+% peers---or entities quite like them---for persons that receive the 
+% credit for having done something despite not themselves being 
+% active in the Catalogue (possibly because they are long since 
+% dead). This certainly presents some complications that need to be 
+% considered.
+% 
+% Attributions as such do however not seem a problematic thing to 
+% have. One could argue that they are slightly off-topic---matters of 
+% the history of mathematics, rather than of the mathematics 
+% itself---but some contributors will likely feel a need to say them, 
+% so they should be given a form for doing so, in an orderly fashion. 
+% As with claims \texttt{cmo:is} or \texttt{cmo:isnt}, merely making 
+% a claim does not make it true, but peer review helps separating the 
+% correct from what is not. A difference to the purely mathematical 
+% claims is that attribution claims could never be verified by 
+% automated theorem provers; here the scholarly contribution is 
+% necessary. Another difference is that attribution claims are 
+% perhaps better not included in reports by default; going on at 
+% length about who did what would likely distract from the 
+% mathematics.
+% 
+% As for actual verbs, that deserves consideration. It would probably 
+% be a mistake to be definite in these assertions, since the 
+% knowledge actually possessed by a contributor is more likely to be 
+% ``I'm reasonably certain this is new'', ``I worked this out from 
+% scratch, but it seems unlikely that I should be the first to have 
+% done that'', or ``this is in $X$, but I don't know if it was new 
+% then'' than it is ``I claim this assertion as forever my 
+% accomplishment''. Sometimes you \emph{know} (barring surprises from 
+% obscure parts of the literature) where something comes from, but 
+% other times you're uncertain, and it's best if the range of 
+% certainties can be expressed.
+% 
+% 
+% 
+% \subsubsection{Domain of a review}
+% 
+% Having a named graph as the subject of a 
+% \texttt{cmo:review:}\meta{status} would make it easy to have one 
+% review judge several claims, but this is possible also with quoted 
+% triples: all one has to do is make a separate assertion for each 
+% quoted triple. Integrity-wise this is no concern; a review applies 
+% to a claim if that claim is included in its body, and it does not 
+% matter for an assertion if that review also mentions other claims. 
+% One might however want to consider whether it is good practice.
+% 
+% The basic thing to review would be a claim like `\texttt{$A$ cmo:is 
+% $P$}', and that is straightforward. However if there is an option 
+% to review multiple claims then there is a temptation to rather make 
+% it ``$A$ (as defined by \texttt{:def1}) is $P$ (as defined by 
+% \texttt{:def2})'', i.e., the three triples
+% \[
+%   \texttt{:def1} \stackrel{\text{defines}}\longrightarrow
+%   A \stackrel{\text{is}}\longrightarrow P
+%   \stackrel{\text{defines}}\longleftarrow \texttt{:def2}
+% \]
+% and if you go that far you might want to throw in the full texts of 
+% \texttt{:def1} and \texttt{:def2} as well, ``just to be absolutely 
+% clear.'' This raises the question of whether the \emph{meaning} of 
+% asserting such a bundle as being \texttt{cmo:review:correct} is that 
+% each and every claim in it is correct. It is hard to see how it 
+% could be otherwise, and yet the intuition behind wanting to combine 
+% them seems to be that it is important to bundle them. 
+% 
+% Things get more complicated for the other review verbs, because 
+% what would it mean that such a combo is \texttt{cmo:review:wrong}? 
+% Are all of them wrong, or are they merely inconsistent? The latter 
+% is not so useful, because then searches doesn't know what claim to 
+% disregard! Keeping reviews to single triples make it clear how to 
+% act upon it.
+% 
+% A solution might be to provide reviews with several slots for the 
+% triples they mention. `\texttt{$A$ cmo:is $P$}' might be 
+% \texttt{cmo:review:correct} by a review whereas 
+% `\texttt{$A$ cmo:isnt $P$}' might be \texttt{cmo:review:wrong} by 
+% the same review literal, even if one needs two assertions to say 
+% both things so that searches can pick them up. The two definitions 
+% might be mentioned as context---\emph{given} 
+% \texttt{:def1 cmo:defines $A$} and 
+% \texttt{:def2 cmo:defines $P$} the case is that \dots---but 
+% definitions should usually be taken as implicitly authorative.
+% 
+% What ought to happens when definitions are uncertain (e.g.~there 
+% are two schools who insist on different definitions of a property, 
+% one of which makes $A$ come out as \texttt{cmo:is $P$} and the other 
+% as \texttt{cmo:isnt $P$}), is not that reviewers 
+% should start annotating their reviews with records of exactly which 
+% definition variants these depend on. Rather, one should acknowledge 
+% that there are two properties $P$ and $P'$ which just so happens to 
+% be \texttt{cmo:called} the same thing (and be applicable to the 
+% same kind of \texttt{cmo:Object}s). Likewise, if two definitions of 
+% an object don't agree, then they are really the definitions of two 
+% different objects $A$ and $A'$, which may be called the same thing 
+% but not fully be the same thing. 
+% 
+% With collaborative editing it is 
+% however easy that you get a drift in the details, if each change is 
+% perceived of as an improvement by its author. This is probably a 
+% matter for which the community needs to develop guidelines: when 
+% are you in fact defining a new entity, and not just improving the 
+% old presentation? The bar for minting a new entity in the Catalogue 
+% would likely be significantly lower than that for creating a new 
+% article in an encyclopaedia.
+% 
+% 
+% 
+% \section{Offline submission format}
+% 
+% Wikidata has a web editing interface where you can create new 
+% entities, and add (or edit) properties of existing entities. 
+% Whereas such an interface for editing the Catalogue would be 
+% \emph{possible}, it does not seem to be particularly convenient: to 
+% contribute a new example one would have to create both a new 
+% \texttt{cmo:Object} and a \texttt{cmo:Material} for its definition, 
+% then make claims about these to tie it all together. There is no 
+% way of knowing whether a submission is complete or got interrupted 
+% halfway through, and there is also little hope of checking whether 
+% a submission is in fact a duplicate.
+% 
+% A more useful mode of submission would be to prepare it all as a 
+% unit, perhaps offline using one's favourite text editor rather than 
+% at the mercy of a flimsy web app, and then have it checked as a 
+% unit, possibly undergoing several revisions before actually being 
+% published. This has the advantage of being more similar to the 
+% normal publication workflow of the research community, and should 
+% encourage a higher submission quality. (Documents, you proofread 
+% before submitting; online postings often not so much.)
+% 
+% But there is the catch of what the format of such submissions 
+% should be. Technically this matter exists also for a web app 
+% aproach, but there one could sweep it under the rug as internal 
+% details of the workings of the app. If you present it as a 
+% submission \emph{format}, then you are forced to do the work of 
+% specifying that format. Doing said work is however likely to produce 
+% a higher quality end result.
+% 
+% 
+% \subsection{RDF encoding of submissions}
+% 
+% Working backwards, we might begin with contemplating how a 
+% submission could be encoded as an RDF dataset. Even if very few 
+% users would be comfortable coding their submissions this way, it 
+% might constitute a useful intermediate encoding for internal use in 
+% Catalogue sites, that more user-friendly formats get converted to. 
+% In particular, it facilitates running queries that compare a 
+% submission to existing content.
+% 
+% One major aspect of RDF content that cannot be predicted offline 
+% is the minting of new IRIs; you cannot know before publication 
+% which IRI will be assigned, and the site's choice might well change 
+% between revisions of the same submission. Hence one would rather 
+% expect the submission dataset to use blank nodes for new nodes 
+% (even if the node is of a type that would require it to have an IRI 
+% as reference), and part of a ``submission published'' response 
+% would be information about which IRIs were assigned to which new 
+% nodes. It is not unreasonable for an author to keep the sources for 
+% a submission (e.g.~as a starting point for further related 
+% submissions), but update them with information on the IRIs 
+% eventually minted.
+% 
+% Indeed, one could argue that it is \emph{undesirable} for manually 
+% composed submission datasets to use explicit IRIs for objects 
+% in the Catalogue. The reason for this is that the actual IRIs are 
+% most likely unintelligible---there is no way from just looking at 
+% one of knowing what it represents---hence there is a definite risk of 
+% copying the wrong one when editing. If instead all database nodes 
+% are normally expressed as (meaningfully named) blank nodes in 
+% submissions, and these blank nodes are then related to information 
+% collectively identifying an IRI, then we have a scheme more likely 
+% to cope with human imperfection.
+% 
+% \begin{rdfname}{verb}{hash}
+%   Concretely, we could have a verb \texttt{cmo:hash} for relating a 
+%   blank node to a (hopefully unique) prefix of the hash identifier 
+%   of some node in the database. Blank nodes with a 
+%   \texttt{cmo:hash} are supposed to be mapped to existing nodes, 
+%   whereas blank nodes without a \texttt{cmo:hash} may be assumed to 
+%   denote nodes that are to be created.
+%    \begin{macrocode}
+%<*schema>
+cmo:hash a rdf:Property
+       ; rdfs:label "has the hash prefix" .
+%</schema>
+%<*example>
+_:Petersen cmo:hash "9GsMW8tq"
+         ; a cmo:Object
+         ; cmo:called "the Petersen graph"@en .
+_:cubic cmo:hash "nK5bfKI7VT1"
+      ; a cmo:Property
+      ; cmo:called "cubic"@en .
+_:Petersen cmo:is _:cubic .
+%    \end{macrocode}
+%   \refcodeline{0}\label{Line:PetersenIsCubic}
+%   (Line~\ref{Line:PetersenIsCubic} is the new claim submitted; the 
+%   earlier ones provide known information about the nodes here 
+%   denoted \verb|_:Petersen| and \verb|_:cubic|.) The 
+%   \texttt{cmo:called} value here serves (i)~to tell a human reader 
+%   of this file what is being denoted and (ii)~as a sanity check on 
+%   the hash: if the node with that hash prefix is in fact not 
+%   \texttt{cmo:called} that, then there has probably been an error, 
+%   so alert the submitter about this and ask for a resolution 
+%   (possibly offering options for correction). It is also possible 
+%   that a prefix which was unique a week ago isn't unique today; in 
+%   that case the extra information may be used to eliminate unwanted 
+%   matches (even though a user confirmation should still be 
+%   requested).
+%   
+%   There are however two problems with the above example. One 
+%   problem is how to add a new \texttt{cmo:called} to an 
+%   entity---how does the system know that one \texttt{cmo:called} is 
+%   supposed to match existing data and another expected not to 
+%   match? Another problem is the palette of verbs to use for matching: 
+%   \texttt{cmo:called} and \texttt{a}~(that is, \texttt{rdf:type}) 
+%   seem natural, but there could be others. Datasets are by 
+%   definition unordered, so one could not rely upon rules such as 
+%   ``the first block of claims about a representing node are 
+%   expected to match''.
+%   
+%   A practical solution to this seems to be that \texttt{cmo:hash} 
+%   also accepts quoted triples as objects, with the interpretation 
+%   that these are used in identifying the subject. Thus the above 
+%   example should rather be
+%    \begin{macrocode}
+_:Petersen cmo:hash "9GsMW8tq"
+         , << _:Petersen a cmo:Object >>
+         , << _:Petersen cmo:called "the Petersen graph"@en >> .
+_:cubic cmo:hash "nK5bfKI7VT1"
+               , << _:cubic a cmo:Property >>
+               , << _:cubic cmo:called "cubic"@en >> .
+_:Petersen cmo:is _:cubic .
+%</example>
+%    \end{macrocode}
+%   There is seemingly a redundancy here in that these quoted triples 
+%   all have to repeat the subject of the \texttt{cmo:hash}, but this 
+%   allows for triples where the node in question rather appears as 
+%   object to equally much be used for identification.
+% \end{rdfname}
+% 
+% Claims more of a bookkeeping kind are not expected to be part of 
+% these submissions, but rather to be supplied implicitly by the 
+% site. Such claims could include authorship attributions using 
+% \texttt{cmo:by} and relations 
+% between a new change and old changes; the submission should only 
+% have to specify a change relative to the current state, not 
+% relative to the full change history.
+% 
+% It should also be understood that some actions can be better 
+% undertaken by interacting with a web interface. Reviewing is a 
+% clear candidate, expressing preferences can be another.
+% 
+% 
+% \subsection{\LaTeX\ encoding of submissions}
+% \label{Ssec:LaTeXSubmit}
+% 
+% Using \LaTeX\ as a source format for data that will eventually be 
+% stored as RDF may seem a strange idea, but in practice it need not 
+% be weirder than using special markup for article metadata; 
+% many publishers have custom commands for author names, addresses, 
+% affiliations, and abstract to facilitate extracting this 
+% information, and authors typically manage to employ these. The key 
+% to making it work is to task authors with providing only 
+% information that makes sense to them, whereas details that are more 
+% technical aspects of the database are better supplied by the 
+% framework.
+% 
+% For example, it is perfectly feasible to have
+%\begin{verbatim}
+%  \begin{define-new}{Object}{\PetersenGraph}
+%    The Petersen graph is (up to isomorphism) that simple graph 
+%    which has as set of vertices $V$ the set of $2$-element subsets 
+%    of a $5$-element set (e.g.~$\{1,2,3,4,5\}$). Two vertices are 
+%    adjacent if and only if they are disjoint as sets.
+%    
+%    $\{1,2\}$, $\{1,3\}$, and $\{3,5\}$ are for example three 
+%    distinct vertices of this graph (there are \(\binom{5}{2} = 10\) 
+%    vertices in total). $\{1,2\}$ and $\{1,3\}$ are not adjacent 
+%    because \(\{1,2\} \cap \{1,3\} = \{1\} \neq \emptyset\), whereas 
+%    $\{1,2\}$ and $\{3,5\}$ are adjacent because \(\{1,2\} \cap 
+%    \{3,5\} = \emptyset\).
+%  \end{define-new}
+%  \called{\PetersenGraph}{the Petersen graph}
+%  \called{\PetersenGraph}{Petersen}
+%\end{verbatim}
+% be source code for creating a new \texttt{cmo:Object} (supplying 
+% those paragraphs as the text for its definition) and also making 
+% two \texttt{cmo:called} claims about it; the idea is that the 
+% \texttt{define-new} environment would define the 
+% \verb|\PetersenGraph| control sequence to hold a temporary 
+% identifier for this new \texttt{cmo:Object}, so that later commands 
+% may reference it.
+% 
+% The RDF submission code generated from the above could be
+%    \begin{macrocode}
+%<*example>
+_:1 a cmo:Object .
+_:2 a cmo:Material .
+_:2 cmo:defines _:1 .
+_:2 cmo:says '''
+  The Petersen graph is (up to isomorphism) that simple graph 
+  which has as set of vertices $V$ the set of $2$-element subsets 
+  of a $5$-element set (e.g.~$\\{1,2,3,4,5\\}$). Two vertices are 
+  adjacent if and only if they are disjoint as sets.
+  
+  $\\{1,2\\}$, $\\{1,3\\}$, and $\\{3,5\\}$ are for example three 
+  distinct vertices of this graph (there are \\(\\binom{5}{2} = 10\\) 
+  vertices in total). $\\{1,2\\}$ and $\\{1,3\\}$ are not adjacent 
+  because \\(\\{1,2\\} \\cap \\{1,3\\} = \\{1\\} \\neq \\emptyset\\), whereas 
+  $\\{1,2\\}$ and $\\{3,5\\}$ are adjacent because \\(\\{1,2\\} \\cap 
+  \\{3,5\\} = \\emptyset\\).
+'''@en .
+_:2 cmo:mimetype "application/x-latex" .
+_:1 cmo:called "the Petersen graph"@en .
+_:1 cmo:called "Petersen"@en .
+%</example>
+%    \end{macrocode}
+% The \texttt{cmo:mimetype} here is a typical example of more 
+% technical information that is better supplied by the framework: 
+% blocks of code in a \LaTeX\ file may be presumed \LaTeX, but few 
+% contributors would know how to state a claim of this fact, so don't 
+% require them to do that themselves. The text of the definition is on 
+% the other hand something that the system would have little 
+% knowledge about, but which the author has given plenty of thought.
+% 
+% The \texttt{define-new} environment as shown would be an example of 
+% slightly higher level markup automating some common trivial tasks. 
+% The bulk of information here is the text of the definition, which 
+% gets attached to a \texttt{cmo:Material}~(\verb|_:2|), but the 
+% focus of an author writing this would rather be on the 
+% \texttt{cmo:Object} this text defines, hence the reason for having 
+% one piece of markup create both and linking them. It can very much 
+% be expected that the author will want to make further claims about 
+% the new thing defined (which could equally well have been a 
+% \texttt{cmo:Property}), so defining a control sequence for referring 
+% to it is almost always helpful.
+% 
+% The \verb|\called| command (which is perhaps a bit too short as a 
+% name) emits one triple with \texttt{cmo:called} as predicate, and 
+% knows the first argument is the subject node but the second 
+% argument the string for a literal---thus relieving the author of 
+% having to learn the details of encoding those. Not explained in this 
+% snippet is how \verb|\called| would know that the text is English, 
+% but it is feasible for a \LaTeX\ command to query the \textsf{babel} 
+% package for the current language, and \verb|\called| might have an 
+% optional argument for specifying the language. The same goes for 
+% the \texttt{define-new} environment.
+% 
+% One aspect of the above that is not quite right, and may hint at a 
+% need for more detailed access, is the use of the \verb|\binom| 
+% command: this is not in the \LaTeX\ kernel, but defined by the 
+% \textsf{amsmath} package, and would thus call for a 
+% \texttt{cmo:usepackage} claim on \verb|_:2|. It is possible to 
+% provide magic also for this---we could check which packages the 
+% source file has used, and automatically throw in 
+% \texttt{cmo:usepackage}s for all of those on all 
+% \texttt{cmo:Material}s created---but that is perhaps likely to bloat 
+% by throwing in too many dependencies. (The site can always check 
+% whether each \texttt{cmo:Material} in a submission has all its 
+% dependencies declared for by trying to typeset them one by one, so 
+% the macros may take a conservative stanse in this regard.)
+% 
+% 
+% ^^A \begin{thebibliography}{99}
+% ^^A   \bibitem{Knuth:TwoNotes}
+% ^^A \end{thebibliography}
+% 
+\endinput
+
+
